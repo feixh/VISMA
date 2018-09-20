@@ -1,0 +1,73 @@
+package vlslam_pb;
+
+
+message CameraInfo {
+    required int32 rows = 1;
+    required int32 cols = 2;
+    repeated double parameters = 3;  // fx, fy, cx, cy ...
+}
+
+message Feature {
+    enum Status {
+        EMPTY = 0;
+        GOODDROP = 1;
+        KEEP = 2;
+        REJECT = 3;
+        INITIALIZING = 4;
+        READY = 5;
+        INSTATE = 6;
+    }
+	required int64 id = 1; // feature id
+	required Status status = 2; // feature status
+	repeated double xp = 3; // pixel coordinates
+	repeated double xw = 4; // world coordinates
+}
+
+message Packet {
+    required double ts = 1; // timestamp
+    repeated double gwc = 2; // camera to world pose
+    repeated Feature features = 3;  // a list of observations
+    repeated double wg = 4; // rotation around gravity
+}
+
+message Track {
+    required double ts = 1; // timestamp
+    repeated Feature tracklets = 2;
+}
+
+message Dataset {
+    optional string description = 1;
+    required CameraInfo camera = 2;
+    repeated Packet packets = 3;
+    repeated Track tracks = 4;
+}
+
+message EdgeMap {
+    optional string description = 1;
+    required int32 rows = 2;
+    required int32 cols = 3;
+    repeated float data = 4;
+}
+
+message BoundingBox {
+    required float top_left_x = 1;
+    required float top_left_y = 2;
+    required float bottom_right_x = 3;
+    required float bottom_right_y = 4;
+    repeated float scores = 5;
+    optional string class_name = 6;
+    optional int32 label = 7;
+
+    // might need more fileds to contain more info, like
+    // truncation, occlusion, etc.
+    // And, other modes from azimuth estimation.
+    optional float azimuth = 8;
+    optional string shape_id = 9;
+    repeated float azimuth_prob = 10;
+}
+
+message BoundingBoxList {
+    optional string description = 1;
+    repeated BoundingBox bounding_boxes = 2;
+}
+
