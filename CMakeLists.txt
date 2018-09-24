@@ -31,11 +31,13 @@ include_directories(
         ${PROTOBUF_INCLUDE_DIRS}
         ${FOLLY_INCLUDE_DIR}
 )
+message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
 
 link_directories(
         ${PROJECT_SOURCE_DIR}/lib
-        ${PROJECT_SOURCE_DIR}/thirdparty/googletest/lib
+        /opt/ros/kinetic/lib    # In case OpenCV libs are installed in a non-standard location, specify the location here.
 )
+
 
 set(OpenCV_MINIMAL
         opencv_highgui3
@@ -56,6 +58,7 @@ link_libraries(
 add_library(visma SHARED
         src/dataset_loaders.cpp
         src/io_utils.cpp
+        src/common/utils.cpp
         ${PROTO_SRCS})
 
 

@@ -7,7 +7,6 @@
 
 // own
 #include "io_utils.h"
-#include "tracker_utils.h"
 #include "opencv2/imgproc.hpp"
 
 namespace feh {
