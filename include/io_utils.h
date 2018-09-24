@@ -9,7 +9,6 @@
 // 3rd party
 #include "opencv2/core.hpp"
 #include "folly/dynamic.h"
-#include "glog/logging.h"
 
 #include "common/utils.h"
 
