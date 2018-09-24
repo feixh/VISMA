@@ -14,3 +14,6 @@ Requirements
     - Go to thirdparty/Sophus and `make build`.
     - Go to the newly created build folder and `cmake .. -DCMAKE_INSTALL_PREFIX=../`
     - `make install`
+    
+    
+Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
