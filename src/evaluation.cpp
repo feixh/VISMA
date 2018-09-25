@@ -23,7 +23,7 @@ namespace feh {
 void FindCorrespondence(const std::unordered_map<int, Model> &tgt,
                         const std::unordered_map<int, Model> &src,
                         const Eigen::Matrix<double, 4, 4> &T_tgt_src,
-                        three::CorrespondenceSet &matches,
+                        open3d::CorrespondenceSet &matches,
                         double threshold) {
     for (const auto &kv1 : src) {
         const Model &m1 = kv1.second;
@@ -49,7 +49,7 @@ void FindCorrespondence(const std::unordered_map<int, Model> &tgt,
 Eigen::Matrix4d OptimizeAlignment(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src,
-    const three::CorrespondenceSet &matches) {
+    const open3d::CorrespondenceSet &matches) {
     std::vector<double> w(matches.size(), 1.0 / matches.size());
     Eigen::Matrix<float, 6, 1> sum, last_sum;
     int iter = 0;
@@ -78,10 +78,10 @@ Eigen::Matrix4d OptimizeAlignment(
     return Sophus::SE3d::exp(sum.cast<double>()).matrix();
 }
 
-three::RegistrationResult RegisterScenes(
+open3d::RegistrationResult RegisterScenes(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src) {
-    three::CorrespondenceSet best_matches;
+    open3d::CorrespondenceSet best_matches;
     Eigen::Matrix4d best_T_tgt_src;
     best_T_tgt_src.setIdentity();
 
@@ -97,7 +97,7 @@ three::RegistrationResult RegisterScenes(
                 auto T_tgt_src = m2.model_to_scene_ * m1.model_to_scene_.inverse(); // corvis -> elasticfusion (ef)
                 std::cout << "T_tgt_src=\n" << T_tgt_src << "\n";
                 // NOW LET'S CHECK THE RESIDUAL OF THIS PROPOSED TRANSFORMATION
-                three::CorrespondenceSet matches;
+                open3d::CorrespondenceSet matches;
                 FindCorrespondence(tgt, src, T_tgt_src, matches, 0.5);
                 if (matches.size() > best_matches.size()) {
                     best_matches = matches;
@@ -108,7 +108,7 @@ three::RegistrationResult RegisterScenes(
     }
 
     best_T_tgt_src = OptimizeAlignment(tgt, src, best_matches);
-    three::RegistrationResult result(best_T_tgt_src);
+    open3d::RegistrationResult result(best_T_tgt_src);
     result.correspondence_set_ = best_matches;
     return result;
 }
@@ -122,8 +122,8 @@ void EvaluationTool(const folly::dynamic &config) {
     std::string scene_dir = dataroot + "/" + dataset + "/";
     std::string fragment_dir = scene_dir + "/fragments/";
     // LOAD SCENE POINT CLOUD
-    auto scene = std::make_shared<three::PointCloud>();
-    three::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *scene);
+    auto scene = std::make_shared<open3d::PointCloud>();
+    open3d::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *scene);
     // READ GROUND TRUTH POSES
     std::string contents;
     folly::readFile(folly::sformat("{}/alignment.json", fragment_dir).c_str(), contents);
@@ -142,7 +142,7 @@ void EvaluationTool(const folly::dynamic &config) {
                      this_model.V_,
                      this_model.F_);
 
-        std::shared_ptr <three::PointCloud> model_pc = std::make_shared<three::PointCloud>();
+        std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
         model_pc->points_ = SamplePointCloudFromMesh(
             this_model.V_, this_model.F_, config["visualization"]["model_samples"].asInt());
         model_pc->colors_.resize(model_pc->points_.size(), {0, 255, 0});
@@ -159,7 +159,7 @@ void EvaluationTool(const folly::dynamic &config) {
             auto model = key_val.second;
             *scene += *(model.pcd_ptr_);
         }
-        three::DrawGeometries({scene}, "Ground truth overlay");
+        open3d::DrawGeometries({scene}, "Ground truth overlay");
     }
 
     // LOAD RESULT FILE
@@ -169,7 +169,7 @@ void EvaluationTool(const folly::dynamic &config) {
     folly::dynamic result = folly::parseJson(folly::json::stripComments(contents));
     // ITERATE AND GET THE LAST ONE
     auto packet = result.at(result.size() - 1);
-    auto scene_est = std::make_shared<three::PointCloud>();
+    auto scene_est = std::make_shared<open3d::PointCloud>();
     std::unordered_map<int, Model> models_est;
     for (const auto &obj : packet) {
         auto pose = io::GetMatrixFromDynamic<double, 3, 4>(obj, "model_pose");
@@ -187,7 +187,7 @@ void EvaluationTool(const folly::dynamic &config) {
                                     this_model.model_name_),
                      this_model.V_, this_model.F_);
 
-        std::shared_ptr <three::PointCloud> model_pc = std::make_shared<three::PointCloud>();
+        std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
         model_pc->points_ = SamplePointCloudFromMesh(
             this_model.V_, this_model.F_,
             config["visualization"]["model_samples"].asInt());
@@ -198,7 +198,7 @@ void EvaluationTool(const folly::dynamic &config) {
         *scene_est += *model_pc;
     }
 
-    three::DrawGeometries({scene_est}, "reconstructed scene");
+    open3d::DrawGeometries({scene_est}, "reconstructed scene");
     auto ret = RegisterScenes(models, models_est);
     auto T_ef_corvis = ret.transformation_;
     std::cout << "T_ef_corvis=\n" << T_ef_corvis << "\n";
@@ -208,8 +208,8 @@ void EvaluationTool(const folly::dynamic &config) {
 
     if (config["evaluation"]["ICP_refinement"].asBool()) {
         // RE-LOAD THE SCENE
-        std::shared_ptr<three::PointCloud> raw_scene = std::make_shared<three::PointCloud>();
-        three::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *raw_scene);
+        std::shared_ptr<open3d::PointCloud> raw_scene = std::make_shared<open3d::PointCloud>();
+        open3d::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *raw_scene);
         // FIXME: MIGHT NEED CROP THE 3D REGION-OF-INTEREST HERE
         auto result = ICPRefinement(raw_scene,
                                     models_est,
@@ -224,42 +224,42 @@ void EvaluationTool(const folly::dynamic &config) {
     folly::writeFile(folly::toPrettyJson(out), output_path.c_str());
     std::cout << "T_ef_corvis written to " << output_path << "\n";
 
-//    three::ReadPointCloudFromPLY(config["scene_directory"].getString() + "/test.klg.ply", *scene);
+//    open3d::ReadPointCloudFromPLY(config["scene_directory"].getString() + "/test.klg.ply", *scene);
     // NOW LETS LOOK AT THE ESTIMATED SCENE IN RGB-D SCENE FRAME
     for (const auto &kv : models_est) {
         const auto &this_model = kv.second;
         this_model.pcd_ptr_->Transform(T_ef_corvis);
         *scene += *(this_model.pcd_ptr_);
     }
-    three::DrawGeometries({scene});
-    three::WritePointCloud(fragment_dir+"/augmented_view.ply", *scene);
+    open3d::DrawGeometries({scene});
+    open3d::WritePointCloud(fragment_dir+"/augmented_view.ply", *scene);
 }
 
 
-three::RegistrationResult ICPRefinement(std::shared_ptr<three::PointCloud> scene,
+open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> scene,
                                         const std::unordered_map<int, Model> &src,
                                         const Eigen::Matrix4d &T_scene_src,
                                         const folly::dynamic &options) {
     // CONSTRUCT ESTIMATED SCENE
-    auto scene_est = std::make_shared<three::PointCloud>();
+    auto scene_est = std::make_shared<open3d::PointCloud>();
     for (const auto &kv : src) {
         const auto &this_model = kv.second;
-        auto model_ptr = std::make_shared<three::PointCloud>();
+        auto model_ptr = std::make_shared<open3d::PointCloud>();
         model_ptr->points_ = SamplePointCloudFromMesh(this_model.V_, this_model.F_, options["samples_per_model"].asInt());
         model_ptr->Transform(this_model.model_to_scene_);
         *scene_est += *model_ptr;
     }
 
-    scene = three::VoxelDownSample(*scene, options.getDefault("voxel_size", 0.02).asDouble());
-    three::RegistrationResult result;
+    scene = open3d::VoxelDownSample(*scene, options.getDefault("voxel_size", 0.02).asDouble());
+    open3d::RegistrationResult result;
     if (options["use_point_to_plane"].asBool()) {
-        result = three::RegistrationICP(*scene_est,
+        result = open3d::RegistrationICP(*scene_est,
                                         *scene,
                                         options.getDefault("max_distance", 0.05).asDouble(),
                                         T_scene_src,
-                                        three::TransformationEstimationPointToPlane());
+                                        open3d::TransformationEstimationPointToPlane());
     } else {
-        result = three::RegistrationICP(*scene_est,
+        result = open3d::RegistrationICP(*scene_est,
                                         *scene,
                                         options.getDefault("max_distance", 0.05).asDouble(),
                                         T_scene_src);

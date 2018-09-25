@@ -6,7 +6,7 @@
 
 #include "Core/Core.h"
 
-namespace three
+namespace open3d
 {
 namespace cicp {
 
@@ -31,4 +31,4 @@ public:
 
 }   // namespace cicp
 
-}   // namespace three
+}   // namespace open3d

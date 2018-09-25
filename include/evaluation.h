@@ -28,7 +28,7 @@ struct Model {
     Eigen::Matrix<double, Eigen::Dynamic, 3> V_;    // vertices
     Eigen::Matrix<int, Eigen::Dynamic, 3> F_;   // faces
     Eigen::Matrix<double, 4, 4> model_to_scene_;
-    std::shared_ptr <three::PointCloud> pcd_ptr_;
+    std::shared_ptr <open3d::PointCloud> pcd_ptr_;
 };
 
 /// \brief: Evaluation procedure. Automated tool for reconstructed scene alignment and evaluation..
@@ -42,7 +42,7 @@ void EvaluationTool(const folly::dynamic &config);
 /// as weights).
 /// \param tgt: Target object set.
 /// \param src: Source object set.
-three::RegistrationResult RegisterScenes(
+open3d::RegistrationResult RegisterScenes(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src);
 
@@ -54,7 +54,7 @@ three::RegistrationResult RegisterScenes(
 void FindCorrespondence(const std::unordered_map<int, Model> &tgt,
                         const std::unordered_map<int, Model> &src,
                         const Eigen::Matrix<double, 4, 4> &T_tgt_src,
-                        three::CorrespondenceSet &matches,
+                        open3d::CorrespondenceSet &matches,
                         double threshold = 0.2);
 
 /// \brief: Naive implementation of SE3 smoothing: Average on tangent space. Might not be optimal.
@@ -62,10 +62,10 @@ void FindCorrespondence(const std::unordered_map<int, Model> &tgt,
 Eigen::Matrix4d OptimizeAlignment(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src,
-    const three::CorrespondenceSet &matches);
+    const open3d::CorrespondenceSet &matches);
 
 /// \brief: ICP to refine the alignment.
-three::RegistrationResult ICPRefinement(std::shared_ptr<three::PointCloud> scene,
+open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> scene,
                                         const std::unordered_map<int, Model> &src,
                                         const Eigen::Matrix4d &T_scene_src,
                                         const folly::dynamic &options);
