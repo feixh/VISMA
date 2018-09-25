@@ -1,8 +1,8 @@
 #include "evaluation.h"
 
 // open3d
-#include "IO/IO.h"
-#include "Visualization/Visualization.h"
+#include "Open3D/IO/IO.h"
+#include "Open3D/Visualization/Visualization.h"
 // libigl
 #include "igl/readOBJ.h"
 // sophus

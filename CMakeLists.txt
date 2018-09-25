@@ -64,10 +64,17 @@ add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
 
-
-
-add_library(visma_eval SHARED
-        src/constrained_icp.cpp
-        src/evaluation.cpp)
-target_link_libraries(visma_eval visma)
+set(build_evaluation FALSE)
+if (${build_evaluation})
+    include_directories(
+            ${PROJECT_SOURCE_DIR}/Open3D/include
+            ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include)
+    link_directories(
+            ${PROJECT_SOURCE_DIR}/Open3D/lib
+    )
+    add_library(visma_eval SHARED
+            src/constrained_icp.cpp
+            src/evaluation.cpp)
+    target_link_libraries(visma_eval visma)
+endif(${build_evaluation})
 

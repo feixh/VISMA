@@ -4,7 +4,7 @@
 // ICP with constraints.
 #pragma once
 
-#include "Core/Core.h"
+#include "Open3D/Core/Core.h"
 
 namespace open3d
 {
