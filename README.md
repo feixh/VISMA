@@ -17,3 +17,8 @@ Requirements
     
     
 Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
+
+
+## Examples
+
+For example usage of data loader, see `example/example_load.cpp` and run `example_load DATASET_DIRECTORY` in the example sub-directory.
