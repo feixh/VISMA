@@ -63,6 +63,9 @@ add_library(visma SHARED
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
+
+
+
 add_library(visma_eval SHARED
         src/constrained_icp.cpp
         src/evaluation.cpp)

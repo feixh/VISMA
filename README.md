@@ -18,6 +18,16 @@ Requirements
     
 Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
 
+To build the evaluation code, you need to build the Open3D library. We provide a version of Open3D in thirdparty directory. First, go to thirdparty/Open3D and follow the instruction on `http://www.open3d.org/docs/getting_started.html#ubuntu` to build, i.e.:
+```
+util/scripts/install-deps-ubuntu.sh
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=../
+make -j
+```
+Then, turn on the flag XXX in CMakeLists.txt to enable building evaluation code and build.
+
 
 ## Examples
 
