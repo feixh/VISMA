@@ -60,7 +60,11 @@ add_library(visma SHARED
         src/io_utils.cpp
         src/common/utils.cpp
         ${PROTO_SRCS})
-
-
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
+
+add_library(visma_eval SHARED
+        src/constrained_icp.cpp
+        src/evaluation.cpp)
+target_link_libraries(visma_eval visma)
+
