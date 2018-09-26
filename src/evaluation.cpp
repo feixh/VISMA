@@ -237,7 +237,7 @@ void MeshAlignment(const folly::dynamic &config) {
         *scene += *(this_model.pcd_ptr_);
     }
     open3d::DrawGeometries({scene}, "semantic reconstruction aligned to RGB-D");
-    open3d::WritePointCloud(fragment_dir+"/augmented_view.ply", *scene);
+    open3d::WritePointCloud(scene_dir+"/augmented_view.ply", *scene);
 }
 
 

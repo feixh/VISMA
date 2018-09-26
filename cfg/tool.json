@@ -1,21 +1,13 @@
 {
 
   // SETUP FOR VLSLAM DATASET
-  "dataroot": "/local/feixh/experiments/record/",
+  "dataroot": "/local/feixh/experiments/RGBD/",
   //  "scene_directory": "/home/visionlab/record/clutter1/",
   "dataset": "clutter1",
   //  "scene_directory": "/home/visionlab/record/clutter2/",
   "CAD_database_root": "/local/feixh/Dropbox/ECCV18/data/CAD_database/",
   "experiment_root": "/local/feixh/experiments/",
   "datatype": "VLSLAM",
-
-  // // SETUP FOR SCENENN DATASET
-  // "dataroot": "/local/Data/SceneNN/",
-  // "dataset": "047",
-  // //  "scene_directory": "/home/visionlab/record/clutter2/",
-  // "CAD_database_root": "/local/Data/SceneNN/047/",
-  // "experiment_root": "/local/Data/SceneNN/",
-  // "datatype": "SceneNN",
 
   "debug": true,
 
