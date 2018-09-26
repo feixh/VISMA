@@ -1,16 +1,8 @@
-#include "common/eigen_alias.h"
-
-// stl
-#include <chrono>
-#include <sophus/se3.hpp>
 // folly
 #include "folly/dynamic.h"
 #include "folly/json.h"
 #include "folly/FileUtil.h"
 // igl
-#include "igl/readOBJ.h"
-// feh
-#include "io_utils.h"
 #include "tool.h"
 
 using namespace feh;

@@ -14,10 +14,11 @@ add_definitions(-DEIGEN_INITIALIZE_MATRICES_BY_ZERO)
 find_package(OpenCV REQUIRED)
 # Eigen
 find_package(Eigen3 REQUIRED)
+# Google log
+find_package(Glog REQUIRED)
 # Protobuf
 find_package(Protobuf REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROJECT_SOURCE_DIR}/protocols/vlslam.proto)
-
 # facebook folly
 find_package(Folly REQUIRED)
 
@@ -31,6 +32,7 @@ include_directories(
         ${EIGEN3_INCLUDE_DIR}
         ${PROTOBUF_INCLUDE_DIRS}
         ${FOLLY_INCLUDE_DIR}
+        ${GLOG_INCLUDE_DIRS}
 )
 message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
 
@@ -55,6 +57,7 @@ link_libraries(
         ${OpenCV_MINIMAL}
         ${FOLLY_LIBRARY}
         double-conversion   # for folly
+        glog
 )
 
 add_library(visma SHARED
@@ -72,14 +75,14 @@ if (${build_evaluation})
             ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D
             ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include)
     link_directories(
-            ${PROJECT_SOURCE_DIR}/Open3D/lib
+            ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/lib
     )
     add_library(visma_eval SHARED
             src/constrained_icp.cpp
             src/evaluation.cpp
             src/visualization.cpp)
-    target_link_libraries(visma_eval visma)
-    add_executable(example_evaluate example/example_tool.cpp)
-    target_link_libraries(example_evaluate visma_eval visma)
+
+    add_executable(example_evaluate example/example_evaluate.cpp)
+    target_link_libraries(example_evaluate visma_eval visma Open3D)
 endif(${build_evaluation})
 

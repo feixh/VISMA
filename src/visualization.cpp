@@ -12,7 +12,6 @@
 // libigl
 #include "igl/readOBJ.h"
 #include <igl/writeOBJ.h>
-#include <vlslam.pb.h>
 #include "igl/readPLY.h"
 // Open3D
 #include "IO/IO.h"
@@ -26,6 +25,7 @@
 #include "io_utils.h"
 #include "geometry.h"
 #include "dataset_loaders.h"
+#include <vlslam.pb.h>
 
 namespace feh {
 
@@ -48,9 +48,9 @@ void AssembleScene(const folly::dynamic &config,
     // LOAD SCENE POINT CLOUD
     std::list<Eigen::Matrix<double, 6, 1>> sceneV;
     if (show_original) {
-        auto scene = std::make_shared<three::PointCloud>();
+        auto scene = std::make_shared<open3d::PointCloud>();
         try {
-            three::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *scene);
+            open3d::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *scene);
             for (int i = 0; i < scene->points_.size(); ++i) {
                 sceneV.push_back({});
                 sceneV.back().head<3>() = scene->points_[i];
