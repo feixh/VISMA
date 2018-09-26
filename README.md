@@ -7,7 +7,6 @@ VISMA stands for Visual Inertial Semantic Mapping and contains both RGB videos a
 Requirements
 - `OpenCV`: Image I/O and processing. Easy way is to install OpenCV via your favorite package manager. 
 - `Eigen`: Linear algebra and matrix manipulation. Install via package manager or build from source.
-- `libigl`: Mesh I/O and geometry processing. Header only library, clone the repo and install.
 - `Protobuf`: Utilities for protocol buffer. Install via package manager.
 - `folly`: Utilities from facebook. Follow instructions on the github page of folly to install.
 - `Sophus`: Library for SE(3) and SO(3) groups. We provide it in the thirdparty directory. Follow the following instruction to build and install locally.
@@ -18,7 +17,11 @@ Requirements
     
 Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
 
-To build the evaluation code, you need to build the Open3D library. We provide a version of Open3D in thirdparty directory. First, go to thirdparty/Open3D and follow the instruction on `http://www.open3d.org/docs/getting_started.html#ubuntu` to build, i.e.:
+To build the evaluation code, you need the following extra dependecies: 
+- `Open3D`: For point cloud manipulation and visualization.
+- `libigl`: Mesh I/O and geometry processing. This is a header only library, clone the repo into thirdparty directory as libigl.
+
+We provide a version of Open3D in thirdparty directory. First, go to thirdparty/Open3D and follow the instruction on `http://www.open3d.org/docs/getting_started.html#ubuntu` to build, i.e.:
 ```
 util/scripts/install-deps-ubuntu.sh
 mkdir build
@@ -26,7 +29,7 @@ cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=../
 make -j
 ```
-Then, turn on the flag XXX in CMakeLists.txt to enable building evaluation code and build.
+Then, set `build_evaluation` to `True` in CMakeLists.txt and build.
 
 
 ## Examples

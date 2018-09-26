@@ -3,7 +3,7 @@ project(VISMA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -g -fopenmp")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
 
@@ -25,6 +25,7 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include
+        ${PROJECT_SOURCE_DIR}/thirdparty/libigl/include
 
         ${OpenCV_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
@@ -35,17 +36,18 @@ message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
 
 link_directories(
         ${PROJECT_SOURCE_DIR}/lib
-        /opt/ros/kinetic/lib    # In case OpenCV libs are installed in a non-standard location, specify the location here.
+        /usr/local/lib
+        /usr/lib
 )
 
 
 set(OpenCV_MINIMAL
-        opencv_highgui3
-        opencv_core3
-        opencv_imgcodecs3
-        opencv_imgproc3
-        opencv_videoio3
-        opencv_calib3d3)
+        opencv_highgui
+        opencv_core
+        opencv_imgcodecs
+        opencv_imgproc
+        opencv_videoio
+        opencv_calib3d)
 
 
 link_libraries(
@@ -64,17 +66,20 @@ add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
 
-set(build_evaluation FALSE)
+set(build_evaluation True)
 if (${build_evaluation})
     include_directories(
-            ${PROJECT_SOURCE_DIR}/Open3D/include
+            ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D
             ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include)
     link_directories(
             ${PROJECT_SOURCE_DIR}/Open3D/lib
     )
     add_library(visma_eval SHARED
             src/constrained_icp.cpp
-            src/evaluation.cpp)
+            src/evaluation.cpp
+            src/visualization.cpp)
     target_link_libraries(visma_eval visma)
+    add_executable(example_evaluate example/example_tool.cpp)
+    target_link_libraries(example_evaluate visma_eval visma)
 endif(${build_evaluation})
 

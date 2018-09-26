@@ -8,6 +8,7 @@
 
 // 3rd party
 #include "folly/dynamic.h"
+#include "Core/Core.h"
 
 namespace feh {
 
