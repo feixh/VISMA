@@ -113,7 +113,7 @@ open3d::RegistrationResult RegisterScenes(
     return result;
 }
 
-void EvaluationTool(const folly::dynamic &config) {
+void MeshAlignment(const folly::dynamic &config) {
     // EXTRACT PATHS
     std::string database_dir = config["CAD_database_root"].getString();
 
@@ -138,9 +138,12 @@ void EvaluationTool(const folly::dynamic &config) {
 
         this_model.model_to_scene_.block<3, 4>(0, 0) = io::GetMatrixFromDynamic<double, 3, 4>(gt_json, key);
         this_model.model_name_ = key.substr(0, key.find_last_of('_'));
+        std::cout << "reading ... " << folly::sformat("{}/{}.obj", database_dir, this_model.model_name_);
+        Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
         igl::readOBJ(folly::sformat("{}/{}.obj", database_dir, this_model.model_name_),
-                     this_model.V_,
+                     tmp,
                      this_model.F_);
+        this_model.V_ = tmp.leftCols(3);
 
         std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
         model_pc->points_ = SamplePointCloudFromMesh(
@@ -182,10 +185,12 @@ void EvaluationTool(const folly::dynamic &config) {
         auto &this_model = models_est[obj["id"].asInt()];
         this_model.model_name_ = obj["model_name"].asString();
         this_model.model_to_scene_.block<3, 4>(0, 0) = pose;
+        Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
         igl::readOBJ(folly::sformat("{}/{}.obj",
                                     database_dir,
                                     this_model.model_name_),
-                     this_model.V_, this_model.F_);
+                     tmp, this_model.F_);
+        this_model.V_ = tmp.leftCols(3);
 
         std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
         model_pc->points_ = SamplePointCloudFromMesh(
@@ -198,7 +203,7 @@ void EvaluationTool(const folly::dynamic &config) {
         *scene_est += *model_pc;
     }
 
-    open3d::DrawGeometries({scene_est}, "reconstructed scene");
+    open3d::DrawGeometries({scene_est}, "semantic reconstruction");
     auto ret = RegisterScenes(models, models_est);
     auto T_ef_corvis = ret.transformation_;
     std::cout << "T_ef_corvis=\n" << T_ef_corvis << "\n";
@@ -231,7 +236,7 @@ void EvaluationTool(const folly::dynamic &config) {
         this_model.pcd_ptr_->Transform(T_ef_corvis);
         *scene += *(this_model.pcd_ptr_);
     }
-    open3d::DrawGeometries({scene});
+    open3d::DrawGeometries({scene}, "semantic reconstruction aligned to RGB-D");
     open3d::WritePointCloud(fragment_dir+"/augmented_view.ply", *scene);
 }
 
@@ -270,7 +275,10 @@ open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> sce
 
 void QuantitativeEvaluation(folly::dynamic config) {
     // disable original mesh
-    CHECK(!config["result_visualization"]["show_original_scene"].getBool());
+    // CHECK(!config["result_visualization"]["show_original_scene"].getBool());
+
+    // Align semantic mapping and RGB-D reconstruction first.
+    MeshAlignment(config);
 
     // assemble result scene mesh
     Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
@@ -278,16 +286,14 @@ void QuantitativeEvaluation(folly::dynamic config) {
     Eigen::Matrix<double, Eigen::Dynamic, 3> Vr;
     Eigen::Matrix<int, Eigen::Dynamic, 3> Fr;
     std::vector<Eigen::Matrix<double, 3, 4>> Gr;
-    AssembleResult(config, &tmp, &Fr, &Gr);
-    Vr = tmp.leftCols(3);
+    AssembleResult(config, &Vr, &Fr, &Gr);
     std::cout << TermColor::cyan << "Result scene mesh assembled" << TermColor::endl;
 
     // assemble ground truth scene mesh
     Eigen::Matrix<double, Eigen::Dynamic, 3> Vg;
     Eigen::Matrix<int, Eigen::Dynamic, 3> Fg;
     std::vector<Eigen::Matrix<double, 3, 4>> Gg; // ground truth poses
-    AssembleGroundTruth(config, &tmp, &Fg, &Gg);
-    Vg = tmp.leftCols(3);
+    AssembleGroundTruth(config, &Vg, &Fg, &Gg);
     std::cout << TermColor::cyan << "Ground truth scene mesh assembled" << TermColor::endl;
 
     // debug

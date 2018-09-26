@@ -34,4 +34,20 @@ Then, set `build_evaluation` to `True` in CMakeLists.txt and build.
 
 ## Examples
 
+### Data loading
+
 For example usage of data loader, see `example/example_load.cpp` and run `example_load DATASET_DIRECTORY` in the example sub-directory.
+
+
+### Evaluation
+
+Paths needed to specify:
+- CAD database
+- Parent directory holding all the datasets
+- Dataset name
+
+To evaluate the semantic reconstruction, we first align the semantic reconstruction to the (pseudo-)ground truth RGB-D reconstruction since both reconstructions are upto a global rigid body transformation and live in their own coordinate system. Function `MeshAlignment` is called to align them. Once aligned, the transformation will be written to `result_alignment.json` in the scene directory. In addition, an augmented view with semantic reconstruction overlaid on the RGB-D reconstruction will be written to  `augmented_view.ply` in the fragment folder.
+
+
+
+

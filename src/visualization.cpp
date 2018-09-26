@@ -32,7 +32,7 @@ namespace feh {
 void AssembleScene(const folly::dynamic &config,
                    const std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> &objects,
                    const Eigen::Matrix<double, 3, 4> &alignment,
-                   std::vector<Eigen::Matrix<double, 6, 1>> &vertices,
+                   std::vector<Eigen::Matrix<double, 3, 1>> &vertices,
                    std::vector<Eigen::Matrix<int, 3, 1>> &faces) {
     std::string database_dir = config["CAD_database_root"].getString();
     std::string dataroot = config["dataroot"].getString();
@@ -46,7 +46,7 @@ void AssembleScene(const folly::dynamic &config,
     double padding_size = config["scene_assembler"].getDefault("padding_size", 0.0).asDouble();
 
     // LOAD SCENE POINT CLOUD
-    std::list<Eigen::Matrix<double, 6, 1>> sceneV;
+    std::list<Eigen::Matrix<double, 3, 1>> sceneV;
     if (show_original) {
         auto scene = std::make_shared<open3d::PointCloud>();
         try {
@@ -54,7 +54,7 @@ void AssembleScene(const folly::dynamic &config,
             for (int i = 0; i < scene->points_.size(); ++i) {
                 sceneV.push_back({});
                 sceneV.back().head<3>() = scene->points_[i];
-                sceneV.back().tail<3>() = scene->colors_[i]; // / 255.0;
+                // sceneV.back().tail<3>() = scene->colors_[i]; // / 255.0;
             }
         } catch (...) {
             std::cout << TermColor::bold + TermColor::red << "GROUND TRUTH POINT CLOUD NOT EXIST" << TermColor::endl;
@@ -65,16 +65,18 @@ void AssembleScene(const folly::dynamic &config,
         std::string model_name = obj.first;
         auto pose = obj.second;
         // LOAD MESH
-        Eigen::Matrix<double, Eigen::Dynamic, 6> v;
+        Eigen::Matrix<double, Eigen::Dynamic, 3> v;
         Eigen::Matrix<int, Eigen::Dynamic, 3> f;
-        igl::readOBJ(folly::sformat("{}/{}.obj", database_dir, model_name), v, f);
+        Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
+        igl::readOBJ(folly::sformat("{}/{}.obj", database_dir, model_name), tmp, f);
+        v = tmp.leftCols(3);
         std::cout << "v.size=" << v.rows() << "x" << v.cols() << "\n";
         // TRANSFORM TO SCENE FRAME
         v.leftCols(3) = (v.leftCols(3) * pose.block<3,3>(0,0).transpose()).rowwise() + pose.block<3, 1>(0, 3).transpose();
         v.leftCols(3) = (v.leftCols(3) * alignment.block<3,3>(0,0).transpose()).rowwise() + alignment.block<3, 1>(0, 3).transpose();
         int v_offset = vertices.size();
         for (int i = 0; i < v.rows(); ++i) {
-            vertices.push_back(v.row(i));
+            vertices.push_back(v.row(i).head<3>());
         }
         if (show_original && !sceneV.empty() && remove_original) {
             std::array<Eigen::Vector3d, 2> bounds;
@@ -111,7 +113,7 @@ void AssembleScene(const folly::dynamic &config,
 }
 
 void AssembleResult(const folly::dynamic &config,
-                    Eigen::Matrix<double, Eigen::Dynamic, 6> *Vout,
+                    Eigen::Matrix<double, Eigen::Dynamic, 3> *Vout,
                     Eigen::Matrix<int, Eigen::Dynamic, 3> *Fout,
                     std::vector<Eigen::Matrix<double, 3, 4>> *Gout) {
     // EXTRACT PATHS
@@ -159,7 +161,7 @@ void AssembleResult(const folly::dynamic &config,
         objects.push_back(std::make_pair(model_name, pose));
     }
 
-    std::vector<Eigen::Matrix<double, 6, 1>> vertices;
+    std::vector<Eigen::Matrix<double, 3, 1>> vertices;
     std::vector<Eigen::Matrix<int, 3, 1>> faces;
     AssembleScene(config, objects, T_ef_corvis, vertices, faces);
     igl::writeOBJ(scene_dir + "/result_augmented_view.obj",
@@ -181,7 +183,7 @@ void AssembleResult(const folly::dynamic &config,
 }
 
 void AssembleGroundTruth(const folly::dynamic &config,
-                         Eigen::Matrix<double, Eigen::Dynamic, 6> *Vout,
+                         Eigen::Matrix<double, Eigen::Dynamic, 3> *Vout,
                          Eigen::Matrix<int, Eigen::Dynamic, 3> *Fout,
                          std::vector<Eigen::Matrix<double, 3, 4>> *Gout) {
     std::string database_dir = config["CAD_database_root"].getString();
@@ -208,7 +210,7 @@ void AssembleGroundTruth(const folly::dynamic &config,
     identity.setZero();
     identity(0, 0) = 1; identity(1, 1) = 1; identity(2, 2) = 1;
 
-    std::vector<Eigen::Matrix<double, 6, 1>> vertices;
+    std::vector<Eigen::Matrix<double, 3, 1>> vertices;
     std::vector<Eigen::Matrix<int, 3, 1>> faces;
 
     AssembleScene(config, objects, identity, vertices, faces);
@@ -232,7 +234,7 @@ void AssembleGroundTruth(const folly::dynamic &config,
 }
 
 void VisualizeResult(const folly::dynamic &config) {
-    Eigen::Matrix<double, Eigen::Dynamic, 6> V, Vtot;
+    Eigen::Matrix<double, Eigen::Dynamic, 3> V, Vtot;
     Eigen::Matrix<int, Eigen::Dynamic, 3> F;
     AssembleResult(config, &V, &F);
 

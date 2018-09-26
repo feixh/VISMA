@@ -12,13 +12,6 @@
 
 namespace feh {
 
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
-// BASIC DATA STRUCTURE
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
 /// \brief: Model data structure for annotation/evaluation tool.
 struct Model {
     Model() :
@@ -32,8 +25,8 @@ struct Model {
     std::shared_ptr <open3d::PointCloud> pcd_ptr_;
 };
 
-/// \brief: Evaluation procedure. Automated tool for reconstructed scene alignment and evaluation..
-void EvaluationTool(const folly::dynamic &config);
+/// \brief: Align semantic mapping and RGB-D reconstruction for quantitative evaluation.
+void MeshAlignment(const folly::dynamic &config);
 
 /// \Brief: Find the rigid body transformation to align the two lists of objects.
 /// Method: find two objects with same shape name in the tgt and src. Compute the relative
@@ -82,13 +75,13 @@ open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> sce
 void AssembleScene(const folly::dynamic &config,
                    const std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4> > > &objects,
                    const Eigen::Matrix<double, 3, 4> &alignment,
-                   std::vector<Eigen::Matrix<double, 6, 1>> &vertices,
+                   std::vector<Eigen::Matrix<double, 3, 1>> &vertices,
                    std::vector<Eigen::Matrix<int, 3, 1>> &faces);
 /// \brief: Visualize semantic reconstruction with sparse point cloud from VIO.
 /// \param V, F: optional output vertex and face arrays in ElasticFusion frame
 /// \param G: optional output array of object poses aligned to ElasticFusion frame
 void AssembleResult(const folly::dynamic &config,
-                    Eigen::Matrix<double, Eigen::Dynamic, 6> *V=nullptr,
+                    Eigen::Matrix<double, Eigen::Dynamic, 3> *V=nullptr,
                     Eigen::Matrix<int, Eigen::Dynamic, 3> *F=nullptr,
                     std::vector<Eigen::Matrix<double, 3, 4>> *G=nullptr);
 void VisualizeResult(const folly::dynamic &config);
@@ -96,7 +89,7 @@ void VisualizeResult(const folly::dynamic &config);
 /// \param V, F: optional output vertex and face arrays in ElasticFusion frame
 /// \param G: optional output array of object poses aligned to ElasticFusion frame
 void AssembleGroundTruth(const folly::dynamic &config,
-                         Eigen::Matrix<double, Eigen::Dynamic, 6> *V=nullptr,
+                         Eigen::Matrix<double, Eigen::Dynamic, 3> *V=nullptr,
                          Eigen::Matrix<int, Eigen::Dynamic, 3> *F=nullptr,
                          std::vector<Eigen::Matrix<double, 3, 4>> *G=nullptr);
 /// \brief: Entrance to quantitative evaluation of surface reconstruction.

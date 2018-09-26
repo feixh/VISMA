@@ -190,7 +190,7 @@ std::array<GenericErrorMetric<T>, 2> MeasurePoseError(
         T best_dist = thresh;
         int best_idx = -1;
         for (int j = 0; j < Gt.size(); ++j) {
-            auto dt = Gt[j].block(0, 3, 3, 3) - Gs[i].block(0, 3, 3, 1);
+            auto dt = Gt[j].block(0, 3, 3, 1) - Gs[i].block(0, 3, 3, 1);
             if (dt.norm() < best_dist) {
                 best_dist = dt.norm();
                 best_idx = j;

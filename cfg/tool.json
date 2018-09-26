@@ -1,0 +1,57 @@
+{
+
+  // SETUP FOR VLSLAM DATASET
+  "dataroot": "/local/feixh/experiments/record/",
+  //  "scene_directory": "/home/visionlab/record/clutter1/",
+  "dataset": "clutter1",
+  //  "scene_directory": "/home/visionlab/record/clutter2/",
+  "CAD_database_root": "/local/feixh/Dropbox/ECCV18/data/CAD_database/",
+  "experiment_root": "/local/feixh/experiments/",
+  "datatype": "VLSLAM",
+
+  // // SETUP FOR SCENENN DATASET
+  // "dataroot": "/local/Data/SceneNN/",
+  // "dataset": "047",
+  // //  "scene_directory": "/home/visionlab/record/clutter2/",
+  // "CAD_database_root": "/local/Data/SceneNN/047/",
+  // "experiment_root": "/local/Data/SceneNN/",
+  // "datatype": "SceneNN",
+
+  "debug": true,
+
+  "visualization": {
+    "model_samples": 5000
+  },
+
+  "ICP": {
+    "voxel_size": 0.01,
+    "point_to_plane": false,
+    "rotation_level": 24,
+    "distance_threshold": 0.02
+  },
+
+  "evaluation": {
+    "show_annotation": false, // GREEN
+    "ICP_refinement": true,
+    "use_point_to_plane": false,
+    "voxel_size": 0.05, // voxel size for downsample
+    "max_distance": 0.075, // threshold for ICP
+    "samples_per_model": 50000  // for ICP refinement
+  },
+
+  "result_visualization": {
+    "result_index": -1,
+    "show_trajectory": true,
+    "show_pointcloud": false
+  },
+
+  "scene_assembler": {
+    "remove_original_objects": true,
+    "padding_size": 0.0,
+    "show_original_scene": true
+  },
+
+  "frame_inspector": {
+    "index": 0
+  }
+}

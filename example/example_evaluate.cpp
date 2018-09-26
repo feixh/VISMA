@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     folly::dynamic config = folly::parseJson(folly::json::stripComments(contents));
     // TURN OFF ORIGINAL SCENE MESH IN QUANTITATIVE EVALUATION
     // AND ONLY COMPARE MESHES CONSIST OF OBJECTS-OF-INTEREST
-    config["result_visualization"]["show_original_scene"] = false;
+    // config["result_visualization"]["show_original_scene"] = false;
     QuantitativeEvaluation(config);
 }
 
