@@ -17,7 +17,6 @@
 
 using namespace feh;
 
-
 int main(int argc, char **argv) {
     float fx{0.561859}, fy{0.901540}, cx{0.491896}, cy{0.512629}, s{0.709402};
     int rows{600}, cols{960};
@@ -26,7 +25,6 @@ int main(int argc, char **argv) {
                                                          rows, cols,
                                                          "crop",
                                                          100+out_rows, out_cols);
-
     const cv::Mat &K = undistorter->getK();
     fx = K.at<double>(0, 0);
     fy = K.at<double>(1, 1);
@@ -59,6 +57,5 @@ int main(int argc, char **argv) {
         char ckey = cv::waitKey(24);
         if (ckey == 'q') break;
     }
-
 }
 

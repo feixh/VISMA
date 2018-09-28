@@ -63,12 +63,16 @@ link_libraries(
 add_library(visma SHARED
         src/dataloader.cpp
         src/utils.cpp
+        src/undistorter.cpp
         ${PROTO_SRCS})
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
 add_executable(example_dump example/example_dump.cpp)
 target_link_libraries(example_dump visma)
+
+add_executable(undistort_images example/undistort_images.cpp)
+target_link_libraries(undistort_images visma)
 
 
 set(build_evaluation True)

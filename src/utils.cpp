@@ -153,15 +153,18 @@ bool LoadMeshFromPlyFile(const std::string &ply_file,
                          std::vector<int> &faces) {
     Eigen::MatrixXf V;
     Eigen::MatrixXi F;
-    igl::readPLY(ply_file, V, F);
-    vertices.reserve(V.rows() * 3);
-    for (int i = 0; i < V.rows(); ++i) {
-        vertices.insert(vertices.end(), {V(i, 0), V(i, 1), V(i, 2)});
+    bool success = igl::readPLY(ply_file, V, F);
+    if (success) {
+        vertices.reserve(V.rows() * 3);
+        for (int i = 0; i < V.rows(); ++i) {
+            vertices.insert(vertices.end(), {V(i, 0), V(i, 1), V(i, 2)});
+        }
+        faces.reserve(F.rows() * 3);
+        for (int i = 0; i < F.rows(); ++i) {
+            faces.insert(faces.end(), {F(i, 0), F(i, 1), F(i, 2)});
+        }
     }
-    faces.reserve(F.rows() * 3);
-    for (int i = 0; i < F.rows(); ++i) {
-        faces.insert(faces.end(), {F(i, 0), F(i, 1), F(i, 2)});
-    }
+    return success;
 }
 
 std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromPlyFile(const std::string &ply_file) {
