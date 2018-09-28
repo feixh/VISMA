@@ -1,6 +1,13 @@
 #include <memory>
-#include <folly/Format.h>
 #include <fstream>
+
+// unix
+#include "sys/stat.h"
+
+// 3rdparty
+#include "folly/Format.h"
+
+// feh
 #include "dataset_loaders.h"
 #include "common/utils.h"
 
@@ -9,15 +16,47 @@ int main(int argc, char *argv[]) {
         std::cout << feh::TermColor::red
                   << "Usage: example_dump DIRECTORY_OF_THE_DATASET OUTPUT_DIRECTORY"
                   << feh::TermColor::endl;
+        exit(-1);
     }
+
     std::shared_ptr<feh::VlslamDatasetLoader> loader;
     try {
         loader = std::make_shared<feh::VlslamDatasetLoader>(argv[1]);
     } catch (const std::exception &) {
         std::cout << feh::TermColor::red
-                  << "Usage: example_load DIRECTORY_OF_THE_DATASET" << feh::TermColor::endl;
+                  << "failed to initialize dataset @ " << argv[1] << feh::TermColor::endl;
         exit(-1);
     }
+
+    // create directory
+    const mode_t DIR_MODE = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+    if (mkdir(argv[2], DIR_MODE) < 0) {
+        std::cout << feh::TermColor::red
+                  << "Failed to create output directory" << feh::TermColor::endl;
+        exit(-1);
+    }
+
+    auto ss = folly::sformat("{}/image", argv[2]);
+    if (mkdir(ss.c_str(), DIR_MODE) < 0) {
+        std::cout << feh::TermColor::red
+                  << "Failed to create output/image directory" << feh::TermColor::endl;
+        exit(-1);
+    }
+    ss = folly::sformat("{}/pose", argv[2]);
+    if (mkdir(ss.c_str(), DIR_MODE) < 0) {
+        std::cout << feh::TermColor::red
+                  << "Failed to create output/pose directory" << feh::TermColor::endl;
+        exit(-1);
+    }
+    ss = folly::sformat("{}/depth", argv[2]);
+    if (mkdir(ss.c_str(), DIR_MODE) < 0) {
+        std::cout << feh::TermColor::red
+                  << "Failed to create output/depth directory" << feh::TermColor::endl;
+        exit(-1);
+    }
+
+
+
     for (int i = 0; i < loader->size(); ++i) {
         cv::Mat img, edgemap;   // image and edge map
         vlslam_pb::BoundingBoxList bboxlist;    // list of bounding boxes
