@@ -1,8 +1,15 @@
 #include <memory>
+#include <folly/Format.h>
+#include <fstream>
 #include "dataset_loaders.h"
 #include "common/utils.h"
 
 int main(int argc, char *argv[]) {
+    if (argc < 3) {
+        std::cout << feh::TermColor::red
+                  << "Usage: example_dump DIRECTORY_OF_THE_DATASET OUTPUT_DIRECTORY"
+                  << feh::TermColor::endl;
+    }
     std::shared_ptr<feh::VlslamDatasetLoader> loader;
     try {
         loader = std::make_shared<feh::VlslamDatasetLoader>(argv[1]);
@@ -17,6 +24,7 @@ int main(int argc, char *argv[]) {
         Sophus::SE3f gwc;   // camera to world transformation
         Sophus::SO3f Rg;    // rotation to align with gravity
         loader->Grab(i, img, edgemap, bboxlist, gwc, Rg);   // grab datum
+        auto depth_samples = loader->GrabSparseDepth(i);
 
         std::cout << "g(world <- camera)=\n" << gwc.matrix3x4() << std::endl;
         std::cout << "Rg=\n" << Rg.matrix() << std::endl;
@@ -37,5 +45,32 @@ int main(int argc, char *argv[]) {
         cv::imshow("image", img);
         cv::imshow("edge map", edgemap);
         cv::waitKey(30);
+
+        // write out image
+        cv::imwrite(folly::sformat("{}/image/{:06d}.jpg", argv[2], i), img);
+
+        // write out pose
+        std::ofstream fid_pose;
+        try {
+            fid_pose.open(folly::sformat("{}/pose/{:06d}.txt", argv[2], i));
+            fid_pose << gwc.matrix3x4();
+            fid_pose.close();
+        } catch (const std::exception &) {
+            exit(-1);
+        }
+
+        // write out sparse depth
+        std::ofstream fid_depth;
+        try {
+            fid_depth.open(folly::sformat("{}/depth/{:06d}.txt", argv[2], i));
+            for (const auto &s : depth_samples) {
+                fid_depth << s.second[0] << " " << s.second[1] << " " << s.second[2] << std::endl;
+            }
+            fid_depth.close();
+        } catch (const std::exception &) {
+            exit(-1);
+        }
+
     }
 }
+

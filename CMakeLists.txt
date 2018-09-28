@@ -68,6 +68,9 @@ add_library(visma SHARED
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
+add_executable(example_dump example/example_dump.cpp)
+target_link_libraries(example_dump visma)
+
 
 set(build_evaluation True)
 if (${build_evaluation})

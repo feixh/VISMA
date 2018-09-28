@@ -123,5 +123,35 @@ std::unordered_map<int64_t, std::array<double, 6>> VlslamDatasetLoader::GrabPoin
     return out;
 };
 
+std::unordered_map<int64_t, std::array<double, 3>> VlslamDatasetLoader::GrabSparseDepth(int i) {
+    std::unordered_map<int64_t, std::array<double, 3>> out;
+    vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
+
+
+    auto gwc = Sophus::SE3f(feh::io::SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    auto gcw = gwc.inverse();
+
+
+    for (auto f : packet_ptr->features()) {
+        if (f.status() == vlslam_pb::Feature_Status_INSTATE
+            || f.status() == vlslam_pb::Feature_Status_GOODDROP) {
+
+
+            Vec3f Xw{f.xw(0), f.xw(1), f.xw(2)};
+            Vec3f Xc = gcw.rotationMatrix() * Xw + gcw.translation();
+            float z = Xc[2];
+
+            if (out.count(f.id())) {
+                out[f.id()] = {f.xp(0), f.xp(1), z};
+            } else {
+                out[f.id()] = {f.xp(0), f.xp(1), z};
+            }
+        }
+    }
+    return out;
+};
+
+
+
 
 }   // namespace feh
