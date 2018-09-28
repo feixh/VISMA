@@ -55,7 +55,12 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-
+    std::array<int, 2> size;
+    std::vector<float> params;
+    loader->GrabCameraInfo(size, params);
+    for (auto each : params) {
+        std::cout << each << " ";
+    }
 
     for (int i = 0; i < loader->size(); ++i) {
         cv::Mat img, edgemap;   // image and edge map

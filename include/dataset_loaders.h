@@ -43,6 +43,12 @@ public:
                       std::string &fullpath);
     std::unordered_map<int64_t, std::array<double, 6>> GrabPointCloud(int i, const cv::Mat &img);
     std::unordered_map<int64_t, std::array<double, 3>> GrabSparseDepth(int i);
+    void GrabCameraInfo(std::array<int, 2> &size, std::vector<float> &params) {
+        size = {dataset_.camera().rows(), dataset_.camera().cols()};    // height, width
+        for (int i = 0; i < dataset_.camera().parameters_size(); ++i)  {
+            params.push_back(dataset_.camera().parameters(i));
+        }
+    }
 
     virtual int size() const { return size_; }
 protected:
