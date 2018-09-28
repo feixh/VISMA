@@ -61,9 +61,8 @@ link_libraries(
 )
 
 add_library(visma SHARED
-        src/dataset_loaders.cpp
-        src/io_utils.cpp
-        src/common/utils.cpp
+        src/dataloader.cpp
+        src/utils.cpp
         ${PROTO_SRCS})
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
@@ -81,7 +80,7 @@ if (${build_evaluation})
             ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/lib
     )
     add_library(visma_eval SHARED
-            src/constrained_icp.cpp
+            src/constrained_ICP.cpp
             src/evaluation.cpp
             src/visualization.cpp)
 
