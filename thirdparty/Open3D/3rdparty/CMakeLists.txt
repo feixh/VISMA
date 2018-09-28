@@ -1,6 +1,6 @@
 find_package(PkgConfig QUIET)
 find_package(OpenGL    QUIET)
-find_package(pybind11  QUIET)
+# find_package(pybind11  QUIET)
 
 if (PKGCONFIG_FOUND)
     pkg_search_module(EIGEN3    eigen3>=3.2.7   QUIET)
