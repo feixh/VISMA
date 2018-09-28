@@ -1,12 +1,12 @@
 {
 
   // SETUP FOR VLSLAM DATASET
-  "dataroot": "/local/feixh/experiments/RGBD/",
+  "dataroot": "/local/feixh/VISMA_experiments/RGBD/",
   //  "scene_directory": "/home/visionlab/record/clutter1/",
   "dataset": "clutter1",
   //  "scene_directory": "/home/visionlab/record/clutter2/",
-  "CAD_database_root": "/local/feixh/Dropbox/ECCV18/data/CAD_database/",
-  "experiment_root": "/local/feixh/experiments/",
+  "CAD_database_root": "/local/feixh/Dropbox/Data/VISMA/CAD/",
+  "experiment_root": "/local/feixh/VISMA_experiments/",
   "datatype": "VLSLAM",
 
   "debug": true,
