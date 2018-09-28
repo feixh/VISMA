@@ -2,7 +2,7 @@
 // Created by visionlab on 2/19/18.
 //
 
-#include "constrained_icp.h"
+#include "constrained_ICP.h"
 #include <Eigen/Geometry>
 
 namespace open3d

@@ -12,7 +12,7 @@
 
 // own
 #include "vlslam.pb.h"
-#include "common/eigen_alias.h"
+#include "eigen_alias.h"
 
 namespace feh {
 

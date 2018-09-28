@@ -12,7 +12,7 @@
 
 // own
 #include "undistorter.h"
-#include "common/utils.h"
+#include "utils.h"
 
 
 using namespace feh;

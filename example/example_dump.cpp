@@ -8,8 +8,8 @@
 #include "folly/Format.h"
 
 // feh
-#include "dataset_loaders.h"
-#include "common/utils.h"
+#include "dataloader.h"
+#include "utils.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {

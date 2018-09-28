@@ -3,7 +3,7 @@
 //
 #pragma once
 
-#include "common/eigen_alias.h"
+#include "eigen_alias.h"
 #include <vector>
 #include <random>
 #include <chrono>

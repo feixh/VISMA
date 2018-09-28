@@ -1,6 +1,6 @@
 #include <memory>
-#include "dataset_loaders.h"
-#include "common/utils.h"
+#include "dataloader.h"
+#include "utils.h"
 
 int main(int argc, char *argv[]) {
     std::shared_ptr<feh::VlslamDatasetLoader> loader;

@@ -22,9 +22,9 @@
 #include "opencv2/opencv.hpp"
 
 // feh
-#include "io_utils.h"
+#include "utils.h"
 #include "geometry.h"
-#include "dataset_loaders.h"
+#include "dataloader.h"
 #include <vlslam.pb.h>
 
 namespace feh {

@@ -1,4 +1,4 @@
-#include "dataset_loaders.h"
+#include "dataloader.h"
 
 // 3rd party
 #include "folly/FileUtil.h"
@@ -6,7 +6,7 @@
 #include "folly/json.h"
 
 // own
-#include "io_utils.h"
+#include "utils.h"
 #include "opencv2/imgproc.hpp"
 
 namespace feh {

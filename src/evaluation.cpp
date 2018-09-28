@@ -12,9 +12,9 @@
 #include "folly/json.h"
 
 // feh
-#include "constrained_icp.h"
+#include "constrained_ICP.h"
 #include "geometry.h"
-#include "io_utils.h"
+#include "utils.h"
 
 namespace feh {
 
