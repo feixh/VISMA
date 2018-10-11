@@ -25,6 +25,29 @@ struct Model {
     std::shared_ptr <open3d::PointCloud> pcd_ptr_;
 };
 
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+// ANNOTATION
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+/// \brief: Annotation procedure. Automated tool to align models to scene.
+void AnnotationTool(const folly::dynamic &config);
+
+/// \brief: Enumerate possible azimuth rotation and perform ICP to find the best transformation to align the
+/// model to the scene. Both model and scene are represented as a point cloud.
+Eigen::Matrix4d RegisterModelToScene(std::shared_ptr <three::PointCloud> model,
+                                     std::shared_ptr <three::PointCloud> scene,
+                                     const folly::dynamic options);
+/// \brief: Helper.
+double MinY(const std::vector<Eigen::Vector3d> &v);
+
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
 /// \brief: Align semantic mapping and RGB-D reconstruction for quantitative evaluation.
 void MeshAlignment(const folly::dynamic &config);
 
