@@ -21,12 +21,8 @@
 // feh
 #include "utils.h"
 #include "geometry.h"
-<<<<<<< HEAD
 #include "dataloader.h"
 #include <vlslam.pb.h>
-=======
-#include "dataset_loaders.h"
->>>>>>> d8c4ae32ca79a1db93d0ae3d104644d399d23593
 
 namespace feh {
 
