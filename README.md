@@ -9,6 +9,7 @@ Requirements
 - `Eigen`: Linear algebra and matrix manipulation. Install via package manager or build from source.
 - `Protobuf`: Utilities for protocol buffer. Install via package manager.
 - `folly`: Utilities from facebook. Follow instructions on the github page of folly to install.
+    - Note, to build folly as a shared library, do `cmake .. -DBUILD_SHARED_LIBS=ON -DCXX_CMAKE_FLAGS=-fPIC`
 - `Sophus`: Library for SE(3) and SO(3) groups. We provide it in the thirdparty directory. Follow the following instruction to build and install locally.
     - Go to thirdparty/Sophus and `make build`.
     - Go to the newly created build folder and `cmake .. -DCMAKE_INSTALL_PREFIX=../`
@@ -26,7 +27,7 @@ We provide a version of Open3D in thirdparty directory. First, go to thirdparty/
 util/scripts/install-deps-ubuntu.sh
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../
+cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=../
 make -j
 ```
 Then, set `build_evaluation` to `True` in CMakeLists.txt and build.

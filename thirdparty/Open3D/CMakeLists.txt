@@ -50,7 +50,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/3rdparty/CMake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # config options
-option(BUILD_SHARED_LIBS         "Build shared libraries"                   OFF)
+option(BUILD_SHARED_LIBS         "Build shared libraries"                   ON)
 option(WITH_OPENMP               "Use OpenMP multi-threading"               ON)
 option(ENABLE_HEADLESS_RENDERING "Use OSMesa for headless rendering"        OFF)
 option(BUILD_CPP_EXAMPLES        "Build the Open3D example programs"        ON)
