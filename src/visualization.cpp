@@ -3,9 +3,6 @@
 //
 #include "tool.h"
 
-// stl
-#include <list>
-
 // folly
 #include "folly/FileUtil.h"
 #include "folly/json.h"
@@ -25,7 +22,6 @@
 #include "io_utils.h"
 #include "geometry.h"
 #include "dataset_loaders.h"
-#include <vlslam.pb.h>
 
 namespace feh {
 
