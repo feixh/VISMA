@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         // write out pose
         std::ofstream fid_pose;
         fid_pose.open(folly::sformat("{}/pose/{:06d}.txt", argv[2], i));
-        fid_pose << gwc.matrix3x4();
+        fid_pose << gwc.matrix();
         fid_pose.close();
 
         // write out sparse depth
