@@ -41,8 +41,11 @@ public:
                       Sophus::SE3f &gwc,
                       Sophus::SO3f &Rg,
                       std::string &fullpath);
-    std::unordered_map<int64_t, std::array<double, 6>> GrabPointCloud(int i, const cv::Mat &img);
-    std::unordered_map<int64_t, std::array<double, 3>> GrabSparseDepth(int i);
+    std::unordered_map<int64_t, std::array<ftype, 6>> GrabPointCloud(int i, const cv::Mat &img);
+    std::unordered_map<int64_t, std::array<ftype, 3>> GrabSparseDepth(int i);
+    /// \brief: Get camera information.
+    /// \returns: [rows, cols] size of the image
+    ///           [fx, fy, cx, cy]
     void GrabCameraInfo(std::array<int, 2> &size, std::vector<float> &params) {
         size = {dataset_.camera().rows(), dataset_.camera().cols()};    // height, width
         for (int i = 0; i < dataset_.camera().parameters_size(); ++i)  {
