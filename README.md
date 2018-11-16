@@ -101,6 +101,7 @@ To evaluate the semantic reconstruction, one needs to provide the following path
 
 We save our semantic mapping results over time in `result.json` file and put it in the dataset folder, say, under `clutter1`. `result.json` contains per time instant semantic reconstruction, where the name of the object models in the CAD database, their pose and id in the SLAM frame are provided.
 
+
 To evaluate the semantic reconstruction, we first align the semantic reconstruction to the (pseudo-)ground truth RGB-D reconstruction since both reconstructions are upto a global rigid body transformation and live in their own coordinate system. Function `MeshAlignment` is called to align them. Once aligned, the transformation will be written to `result_alignment.json` in the dataset folder. In addition, an augmented view with semantic reconstruction overlaid on the RGB-D reconstruction will be written to  `augmented_view.ply`. The following files will be generated to hold quantitative results:
 - `surface_error.json`
 - `rotation_error.json`
