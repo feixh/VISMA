@@ -46,8 +46,8 @@ bool VlslamDatasetLoader::Grab(int i,
                                cv::Mat &image,
                                cv::Mat &edgemap,
                                vlslam_pb::BoundingBoxList &bboxlist,
-                               Sophus::SE3f &gwc,
-                               Sophus::SO3f &Rg,
+                               SE3f &gwc,
+                               SO3f &Rg,
                                std::string &fullpath) {
     fullpath = png_files_[i];
     return Grab(i, image, edgemap, bboxlist, gwc, Rg);
@@ -57,18 +57,18 @@ bool VlslamDatasetLoader::Grab(int i,
                                cv::Mat &image,
                                cv::Mat &edgemap,
                                vlslam_pb::BoundingBoxList &bboxlist,
-                               Sophus::SE3f &gwc,
-                               Sophus::SO3f &Rg) {
+                               SE3f &gwc,
+                               SO3f &Rg) {
 
     if (i >= size_ || i < 0) return false;
     std::cout << i << "\n";
 
     vlslam_pb::Packet *packet_ptr(dataset_.mutable_packets(i));
-    gwc = Sophus::SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    gwc = SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
 
     // gravity alignment rotation
     Vec3f Wg(packet_ptr->wg(0), packet_ptr->wg(1), 0);
-    Rg = Sophus::SO3f::exp(Wg);
+    Rg = SO3f::exp(Wg);
 
     // read image
     std::string png_file = png_files_[i];
@@ -130,8 +130,8 @@ std::unordered_map<int64_t, std::array<ftype, 3>> VlslamDatasetLoader::GrabSpars
     vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
 
 
-    auto gwc = Sophus::SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
-    auto gcw = gwc.inverse();
+    auto gwc = SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    auto gcw = gwc.inv();
 
 
     for (auto f : packet_ptr->features()) {
@@ -140,7 +140,8 @@ std::unordered_map<int64_t, std::array<ftype, 3>> VlslamDatasetLoader::GrabSpars
 
 
             Vec3f Xw{f.xw(0), f.xw(1), f.xw(2)};
-            Vec3f Xc = gcw.rotationMatrix() * Xw + gcw.translation();
+            // Vec3f Xc = gcw.rotationMatrix() * Xw + gcw.translation();
+            Vec3f Xc = gcw * Xw;
             float z = Xc[2];
 
             if (out.count(f.id())) {

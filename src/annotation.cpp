@@ -10,7 +10,6 @@
 
 #include "igl/readOBJ.h"
 
-#include "sophus/se3.hpp"
 #include "json/json.h"
 
 // feh

@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 // 3rd party
-#include "sophus/se3.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/video/video.hpp"
 
@@ -31,15 +30,15 @@ public:
                       cv::Mat &image,
                       cv::Mat &edgemap,
                       vlslam_pb::BoundingBoxList &bboxlist,
-                      Sophus::SE3f &gwc,
-                      Sophus::SO3f &Rg);
+                      SE3f &gwc,
+                      SO3f &Rg);
     /// \param fullpath: full path to the image file
     virtual bool Grab(int i,
                       cv::Mat &image,
                       cv::Mat &edgemap,
                       vlslam_pb::BoundingBoxList &bboxlist,
-                      Sophus::SE3f &gwc,
-                      Sophus::SO3f &Rg,
+                      SE3f &gwc,
+                      SO3f &Rg,
                       std::string &fullpath);
     std::unordered_map<int64_t, std::array<ftype, 6>> GrabPointCloud(int i, const cv::Mat &img);
     std::unordered_map<int64_t, std::array<ftype, 3>> GrabSparseDepth(int i);

@@ -55,7 +55,13 @@ using MatX3i = Eigen::Matrix<int, Eigen::Dynamic, 3>;
 using SE3 = SE3Type<ftype>;
 using SO3 = SO3Type<ftype>;
 
-static const float eps = 1e-4f;
+using SE3f = SE3Type<float>;
+using SO3f = SO3Type<float>;
+
+using SE3d = SE3Type<double>;
+using SO3d = SO3Type<double>;
+
+static const ftype eps = 1e-4f;
 
 }   // namespace feh
 

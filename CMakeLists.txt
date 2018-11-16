@@ -26,7 +26,6 @@ add_subdirectory(thirdparty/jsoncpp)
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include
         ${PROJECT_SOURCE_DIR}/thirdparty/libigl/include
         ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/include
         ${PROJECT_SOURCE_DIR}/thirdparty/abseil-cpp
@@ -78,8 +77,7 @@ target_link_libraries(undistort_images visma)
 set(build_evaluation True)
 if (${build_evaluation})
     include_directories(
-            ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D
-            ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include)
+            ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D)
     link_directories(
             ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/lib
     )

@@ -13,47 +13,49 @@
 
 const int downsample_rate = 2;
 
+using namespace feh;
+
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        std::cout << feh::TermColor::red
+        std::cout << TermColor::red
                   << "Usage: example_dump DIRECTORY_OF_THE_DATASET OUTPUT_DIRECTORY"
-                  << feh::TermColor::endl;
+                  << TermColor::endl;
         exit(-1);
     }
 
-    std::shared_ptr<feh::VlslamDatasetLoader> loader;
+    std::shared_ptr<VlslamDatasetLoader> loader;
     try {
-        loader = std::make_shared<feh::VlslamDatasetLoader>(argv[1]);
+        loader = std::make_shared<VlslamDatasetLoader>(argv[1]);
     } catch (const std::exception &) {
-        std::cout << feh::TermColor::red
-                  << "failed to initialize dataset @ " << argv[1] << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "failed to initialize dataset @ " << argv[1] << TermColor::endl;
         exit(-1);
     }
 
     // create directory
     const mode_t DIR_MODE = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
     if (mkdir(argv[2], DIR_MODE) < 0) {
-        std::cout << feh::TermColor::red
-                  << "Failed to create output directory" << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "Failed to create output directory" << TermColor::endl;
         exit(-1);
     }
 
     auto ss = absl::StrFormat("%s/image", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
-        std::cout << feh::TermColor::red
-                  << "Failed to create output/image directory" << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "Failed to create output/image directory" << TermColor::endl;
         exit(-1);
     }
     ss = absl::StrFormat("%s/pose", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
-        std::cout << feh::TermColor::red
-                  << "Failed to create output/pose directory" << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "Failed to create output/pose directory" << TermColor::endl;
         exit(-1);
     }
     ss = absl::StrFormat("%s/depth", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
-        std::cout << feh::TermColor::red
-                  << "Failed to create output/depth directory" << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "Failed to create output/depth directory" << TermColor::endl;
         exit(-1);
     }
 
@@ -74,8 +76,8 @@ int main(int argc, char *argv[]) {
     Kout.close();
 
     for (int i = 0; i < loader->size(); ++i) {
-        Sophus::SE3f gwc;
-        Sophus::SO3f Rg;    // rotation to align with gravity
+        SE3f gwc;
+        SO3f Rg;    // rotation to align with gravity
         cv::Mat img, edgemap;
         vlslam_pb::BoundingBoxList bboxlist;
 

@@ -11,8 +11,6 @@
 // Open3D
 #include "IO/IO.h"
 #include "Visualization/Visualization.h"
-// Sophus
-#include "sophus/se3.hpp"
 // OpenCV
 #include "opencv2/opencv.hpp"
 
@@ -258,7 +256,7 @@ void VisualizeResult(const Json::Value &config) {
         std::vector<Eigen::Matrix<double, 6, 1>> vtraj;
         for (int i = 0; i < dataset.packets_size(); ++i) {
             auto packet = dataset.mutable_packets(i);
-            const auto gwc = Sophus::SE3f(SE3FromArray(packet->mutable_gwc()->mutable_data()));
+            const auto gwc = SE3f(SE3FromArray(packet->mutable_gwc()->mutable_data()));
             auto Twc = T_ef_corvis.block<3, 3>(0, 0) * gwc.translation().cast<double>() + T_ef_corvis.block<3, 1>(0, 3);
             vtraj.push_back({});
             vtraj.back() << Twc(0), Twc(1), Twc(2), 1.0, 0.5, 0.0;

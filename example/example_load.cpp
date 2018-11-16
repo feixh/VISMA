@@ -2,20 +2,22 @@
 #include "dataloader.h"
 #include "utils.h"
 
+using namespace feh;
+
 int main(int argc, char *argv[]) {
-    std::shared_ptr<feh::VlslamDatasetLoader> loader;
+    std::shared_ptr<VlslamDatasetLoader> loader;
     try {
-        loader = std::make_shared<feh::VlslamDatasetLoader>(argv[1]);
+        loader = std::make_shared<VlslamDatasetLoader>(argv[1]);
     } catch (const std::exception &) {
-        std::cout << feh::TermColor::red
-                  << "Usage: example_load DIRECTORY_OF_THE_DATASET" << feh::TermColor::endl;
+        std::cout << TermColor::red
+                  << "Usage: example_load DIRECTORY_OF_THE_DATASET" << TermColor::endl;
         exit(-1);
     }
     for (int i = 0; i < loader->size(); ++i) {
         cv::Mat img, edgemap;   // image and edge map
         vlslam_pb::BoundingBoxList bboxlist;    // list of bounding boxes
-        Sophus::SE3f gwc;   // camera to world transformation
-        Sophus::SO3f Rg;    // rotation to align with gravity
+        SE3f gwc;   // camera to world transformation
+        SO3f Rg;    // rotation to align with gravity
         loader->Grab(i, img, edgemap, bboxlist, gwc, Rg);   // grab datum
 
         std::cout << "g(world <- camera)=\n" << gwc.matrix3x4() << std::endl;

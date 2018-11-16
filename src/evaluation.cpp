@@ -5,8 +5,6 @@
 #include "Visualization/Visualization.h"
 // libigl
 #include "igl/readOBJ.h"
-// sophus
-#include "sophus/se3.hpp"
 #include "json/json.h"
 
 // feh
@@ -48,6 +46,8 @@ Eigen::Matrix4d OptimizeAlignment(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src,
     const open3d::CorrespondenceSet &matches) {
+  // Need to implement log & exp map of SE(3) first
+  /*
     std::vector<double> w(matches.size(), 1.0 / matches.size());
     Eigen::Matrix<float, 6, 1> sum, last_sum;
     int iter = 0;
@@ -56,16 +56,16 @@ Eigen::Matrix4d OptimizeAlignment(
         for (int k = 0; k < matches.size(); ++k) {
             const auto &match = matches[k];
             auto dT = tgt.at(match[1]).model_to_scene_ * src.at(match[0]).model_to_scene_.inverse();
-            Eigen::Matrix<float, 6, 1> tangent = Sophus::SE3f(dT.cast<float>()).log();
+            Eigen::Matrix<float, 6, 1> tangent = SE3f(dT.cast<float>()).log();
             sum += w[k] * tangent;
         }
-        auto T = Sophus::SE3d::exp(sum.cast<double>());
+        auto T = SE3d::exp(sum.cast<double>());
         // compute weights
         double sum_w(0);
         for (int k = 0; k < matches.size(); ++k) {
             const auto &match = matches[k];
             auto dT = tgt.at(match[1]).model_to_scene_ * (T.matrix() * src.at(match[0]).model_to_scene_).inverse();
-            w[k] = 1.0 / std::max<double>(1e-4, Sophus::SE3f(dT.cast<float>()).log().norm());
+            w[k] = 1.0 / std::max<double>(1e-4, SE3f(dT.cast<float>()).log().norm());
             sum_w += w[k];
         }
         for (auto &each_w : w) each_w /= sum_w;
@@ -73,7 +73,8 @@ Eigen::Matrix4d OptimizeAlignment(
         last_sum = sum;
     }
     std::cout << "Alignment optimization finished after " << iter << " iterations\n";
-    return Sophus::SE3d::exp(sum.cast<double>()).matrix();
+    return SE3d::exp(sum.cast<double>()).matrix();
+    */
 }
 
 open3d::RegistrationResult RegisterScenes(
