@@ -3,9 +3,7 @@
 //
 #include "tool.h"
 
-// folly
-#include "folly/FileUtil.h"
-#include "folly/json.h"
+#include "json/json.h"
 // libigl
 #include "igl/readOBJ.h"
 #include <igl/writeOBJ.h>
@@ -22,25 +20,25 @@
 #include "utils.h"
 #include "geometry.h"
 #include "dataloader.h"
-#include <vlslam.pb.h>
+#include "vlslam.pb.h"
 
 namespace feh {
 
-void AssembleScene(const folly::dynamic &config,
+void AssembleScene(const Json::Value &config,
                    const std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> &objects,
                    const Eigen::Matrix<double, 3, 4> &alignment,
                    std::vector<Eigen::Matrix<double, 3, 1>> &vertices,
                    std::vector<Eigen::Matrix<int, 3, 1>> &faces) {
-    std::string database_dir = config["CAD_database_root"].getString();
-    std::string dataroot = config["dataroot"].getString();
-    std::string dataset = config["dataset"].getString();
+    std::string database_dir = config["CAD_database_root"].asString();
+    std::string dataroot = config["dataroot"].asString();
+    std::string dataset = config["dataset"].asString();
     std::string scene_dir = dataroot + "/" + dataset + "/";
     std::string fragment_dir = scene_dir + "/fragments/";
 
     // LOAD FLAGS
-    bool show_original = config["scene_assembler"].getDefault("show_original_scene", true).asBool();
-    bool remove_original = config["scene_assembler"].getDefault("remove_original_objects", true).asBool();
-    double padding_size = config["scene_assembler"].getDefault("padding_size", 0.0).asDouble();
+    bool show_original = config["scene_assembler"].get("show_original_scene", true).asBool();
+    bool remove_original = config["scene_assembler"].get("remove_original_objects", true).asBool();
+    double padding_size = config["scene_assembler"].get("padding_size", 0.0).asDouble();
 
     // LOAD SCENE POINT CLOUD
     std::list<Eigen::Matrix<double, 3, 1>> sceneV;
@@ -65,7 +63,7 @@ void AssembleScene(const folly::dynamic &config,
         Eigen::Matrix<double, Eigen::Dynamic, 3> v;
         Eigen::Matrix<int, Eigen::Dynamic, 3> f;
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(folly::sformat("{}/{}.obj", database_dir, model_name), tmp, f);
+        igl::readOBJ(absl::StrFormat("%s/%s.obj", database_dir, model_name), tmp, f);
         v = tmp.leftCols(3);
         std::cout << "v.size=" << v.rows() << "x" << v.cols() << "\n";
         // TRANSFORM TO SCENE FRAME
@@ -109,15 +107,15 @@ void AssembleScene(const folly::dynamic &config,
     if (!sceneV.empty()) vertices.insert(vertices.end(), sceneV.begin(), sceneV.end());
 }
 
-void AssembleResult(const folly::dynamic &config,
+void AssembleResult(const Json::Value &config,
                     Eigen::Matrix<double, Eigen::Dynamic, 3> *Vout,
                     Eigen::Matrix<int, Eigen::Dynamic, 3> *Fout,
                     std::vector<Eigen::Matrix<double, 3, 4>> *Gout) {
     // EXTRACT PATHS
-    std::string database_dir = config["CAD_database_root"].getString();
+    std::string database_dir = config["CAD_database_root"].asString();
 
-    std::string dataroot = config["dataroot"].getString();
-    std::string dataset = config["dataset"].getString();
+    std::string dataroot = config["dataroot"].asString();
+    std::string dataset = config["dataset"].asString();
     std::string scene_dir = dataroot + "/" + dataset + "/";
     std::string fragment_dir = scene_dir + "/fragments/";
 
@@ -128,8 +126,7 @@ void AssembleResult(const folly::dynamic &config,
     std::string result_alignment_file = scene_dir + "/result_alignment.json";
     Eigen::Matrix<double, 3, 4> T_ef_corvis;
     try {
-        folly::readFile(result_alignment_file.c_str(), contents);
-        folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
+        auto result_alignment = LoadJson(result_alignment_file);
         T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
     } catch (...) {
         std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;
@@ -139,17 +136,16 @@ void AssembleResult(const folly::dynamic &config,
 
 
     // LOAD RESULT FILE
-    std::string result_file = folly::sformat("{}/result.json", scene_dir);
-    folly::readFile(result_file.c_str(), contents);
-    folly::dynamic result = folly::parseJson(folly::json::stripComments(contents));
+    std::string result_file = scene_dir + "/result.json";
+    auto result = LoadJson(result_file);
     // ITERATE AND GET THE LAST ONE
-    int result_index = config["result_visualization"].getDefault("result_index", -1).asInt();
+    int result_index = config["result_visualization"].get("result_index", -1).asInt();
     if (result_index < 0) result_index = result.size()-1;
-    auto packet = result.at(result_index);
+    auto packet = result[result_index];
     std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> objects;
     for (const auto &obj : packet) {
         auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
-        std::cout << folly::format("id={}\nstatus={}\nshape={}\npose=\n",
+        std::cout << absl::StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
                                    obj["model_name"].asString())
@@ -179,25 +175,24 @@ void AssembleResult(const folly::dynamic &config,
     }
 }
 
-void AssembleGroundTruth(const folly::dynamic &config,
+void AssembleGroundTruth(const Json::Value &config,
                          Eigen::Matrix<double, Eigen::Dynamic, 3> *Vout,
                          Eigen::Matrix<int, Eigen::Dynamic, 3> *Fout,
                          std::vector<Eigen::Matrix<double, 3, 4>> *Gout) {
-    std::string database_dir = config["CAD_database_root"].getString();
-    std::string dataroot = config["dataroot"].getString();
-    std::string dataset = config["dataset"].getString();
+    std::string database_dir = config["CAD_database_root"].asString();
+    std::string dataroot = config["dataroot"].asString();
+    std::string dataset = config["dataset"].asString();
     std::string scene_dir = dataroot + "/" + dataset + "/";
     std::string fragment_dir = scene_dir + "/fragments/";
 
     // LOAD GROUND TRUTH ALIGNMENT
     std::string alignment_file = fragment_dir + "/alignment.json";
-    std::string contents;
-    folly::readFile(alignment_file.c_str(), contents);
-    folly::dynamic alignment = folly::parseJson(folly::json::stripComments(contents));
+    auto alignment = LoadJson(alignment_file);
 
     std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> objects;
-    for (const auto &obj : alignment.keys()) {
-        std::string obj_name = obj.asString();
+    // for (const auto &obj : alignment.keys()) {
+    for (auto it = alignment.begin(); it != alignment.end(); ++it) {
+        std::string obj_name = it.key().asString();
         std::string model_name = obj_name.substr(0, obj_name.find_last_of('_'));
         auto pose = GetMatrixFromJson<double, 3, 4>(alignment, obj_name);
         std::cout << obj_name << "\n" << model_name << "\n" << pose << "\n";
@@ -230,23 +225,23 @@ void AssembleGroundTruth(const folly::dynamic &config,
     }
 }
 
-void VisualizeResult(const folly::dynamic &config) {
+void VisualizeResult(const Json::Value &config) {
     Eigen::Matrix<double, Eigen::Dynamic, 3> V, Vtot;
     Eigen::Matrix<int, Eigen::Dynamic, 3> F;
     AssembleResult(config, &V, &F);
 
-    std::string dataset_path = config["experiment_root"].getString() + "/" + config["dataset"].getString();
-    std::string scene_dir = folly::sformat("{}/{}/", config["dataroot"].getString(), config["dataset"].getString());
+    std::string dataset_path = config["experiment_root"].asString() + "/" + config["dataset"].asString();
+    std::string scene_dir = absl::StrFormat("%s/%s/", 
+        config["dataroot"].asString(), config["dataset"].asString());
 
     Eigen::Matrix<double, Eigen::Dynamic, 6> traj, pts;
 
-    if (config["result_visualization"]["show_trajectory"].getBool()) {
+    if (config["result_visualization"]["show_trajectory"].asBool()) {
         std::string contents;
         std::string result_alignment_file = scene_dir + "/result_alignment.json";
         Eigen::Matrix<double, 3, 4> T_ef_corvis;
         try {
-            folly::readFile(result_alignment_file.c_str(), contents);
-            folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
+            auto result_alignment = LoadJson(result_alignment_file);
             T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
         } catch (...) {
             std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;
@@ -271,13 +266,12 @@ void VisualizeResult(const folly::dynamic &config) {
         traj = StdVectorOfEigenVectorToEigenMatrix(vtraj);
     }
 
-    if (config["result_visualization"]["show_pointcloud"].getBool()) {
+    if (config["result_visualization"]["show_pointcloud"].asBool()) {
         std::string contents;
         std::string result_alignment_file = scene_dir + "/result_alignment.json";
         Eigen::Matrix<double, 3, 4> T_ef_corvis;
         try {
-            folly::readFile(result_alignment_file.c_str(), contents);
-            folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
+            auto result_alignment = LoadJson(result_alignment_file);
             T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
         } catch (...) {
             std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;

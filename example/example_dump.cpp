@@ -5,8 +5,7 @@
 #include "sys/stat.h"
 
 // 3rdparty
-#include "folly/Format.h"
-#include "opencv2/imgproc.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 // feh
 #include "dataloader.h"
@@ -39,19 +38,19 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    auto ss = folly::sformat("{}/image", argv[2]);
+    auto ss = absl::StrFormat("%s/image", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
         std::cout << feh::TermColor::red
                   << "Failed to create output/image directory" << feh::TermColor::endl;
         exit(-1);
     }
-    ss = folly::sformat("{}/pose", argv[2]);
+    ss = absl::StrFormat("%s/pose", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
         std::cout << feh::TermColor::red
                   << "Failed to create output/pose directory" << feh::TermColor::endl;
         exit(-1);
     }
-    ss = folly::sformat("{}/depth", argv[2]);
+    ss = absl::StrFormat("%s/depth", argv[2]);
     if (mkdir(ss.c_str(), DIR_MODE) < 0) {
         std::cout << feh::TermColor::red
                   << "Failed to create output/depth directory" << feh::TermColor::endl;
@@ -70,7 +69,7 @@ int main(int argc, char *argv[]) {
     K << params[0], 0, params[2],
       0, params[1], params[3],
       0, 0, 1;
-    std::ofstream Kout(folly::sformat("{}/K.txt", argv[2]), std::ios::out);
+    std::ofstream Kout(absl::StrFormat("%s/K.txt", argv[2]), std::ios::out);
     Kout << K;
     Kout.close();
 
@@ -88,14 +87,14 @@ int main(int argc, char *argv[]) {
 
         // write out pose
         std::ofstream fid_pose;
-        fid_pose.open(folly::sformat("{}/pose/{:06d}.txt", argv[2], i));
+        fid_pose.open(absl::StrFormat("%s/pose/%06d.txt", argv[2], i));
         fid_pose << gwc.matrix();
         fid_pose.close();
 
         // write out sparse depth
         std::ofstream fid_depth;
         try {
-            fid_depth.open(folly::sformat("{}/depth/{:06d}.txt", argv[2], i));
+            fid_depth.open(absl::StrFormat("%s/depth/%06d.txt", argv[2], i));
             for (const auto &s : depth_samples) {
                 if (s.second[1] > 0) {
                     fid_depth << s.second[0] << " " 
@@ -109,7 +108,7 @@ int main(int argc, char *argv[]) {
         }
 
         // write out image
-        cv::imwrite(folly::sformat("{}/image/{:06d}.jpg", argv[2], i), img);
+        cv::imwrite(absl::StrFormat("%s/image/%06d.jpg", argv[2], i), img);
 
         cv::imshow("image", img);
         // cv::imshow("edge map", edgemap);

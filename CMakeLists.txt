@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(VISMA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable -Wno-narrowing")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
@@ -21,6 +21,7 @@ find_package(Protobuf REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROJECT_SOURCE_DIR}/protocols/vlslam.proto)
 
 add_subdirectory(thirdparty/abseil-cpp)
+add_subdirectory(thirdparty/jsoncpp)
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -30,7 +31,6 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/include
         ${PROJECT_SOURCE_DIR}/thirdparty/abseil-cpp
 
-        ${OpenCV_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
         ${PROTOBUF_INCLUDE_DIRS}
         ${GLOG_INCLUDE_DIRS}
@@ -39,24 +39,23 @@ message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
 
 link_directories(
         ${PROJECT_SOURCE_DIR}/lib
+        ${PROJECT_SOURCE_DIR}/jsoncpp/lib
         /usr/local/lib
         /usr/lib
 )
 
 
-set(OpenCV_MINIMAL
-        opencv_highgui
-        opencv_core
-        opencv_imgcodecs
-        opencv_imgproc
-        opencv_video
-        opencv_calib3d)
-
-
 link_libraries(
         protobuf
-        ${OpenCV_MINIMAL}
         glog
+        jsoncpp
+        absl::str_format
+
+        opencv_highgui
+        opencv_core
+        opencv_imgproc
+        opencv_video
+        opencv_calib3d
 )
 
 add_library(visma SHARED
@@ -64,7 +63,6 @@ add_library(visma SHARED
         src/utils.cpp
         src/undistorter.cpp
         ${PROTO_SRCS})
-target_link_libraries(visma absl::strings)
 
 
 add_executable(example_load example/example_load.cpp)

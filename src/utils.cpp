@@ -17,7 +17,6 @@
 
 namespace feh {
 
-#ifdef FEH_CORE_USE_COLOR_INFO
 const std::string TermColor::red     = "\033[91m";
 const std::string TermColor::green   = "\033[92m";
 const std::string TermColor::blue    = "\033[94m";
@@ -29,19 +28,6 @@ const std::string TermColor::white   = "\033[97m";
 const std::string TermColor::bold    = "\033[1m";
 const std::string TermColor::end     = "\033[0m";
 const std::string TermColor::endl     = "\033[0m\n";
-#else
-const std::string TermColor::red     = "";
-const std::string TermColor::green   = "";
-const std::string TermColor::blue    = "";
-const std::string TermColor::cyan    = "";
-const std::string TermColor::yellow  = "";
-const std::string TermColor::magenta = "";
-const std::string TermColor::gray    = "";
-const std::string TermColor::white   = "";
-const std::string TermColor::bold    = "";
-const std::string TermColor::end     = "";
-#endif
-
 
 std::ostream& operator<<(std::ostream& os, const Timer& obj)
 {
@@ -216,6 +202,13 @@ Json::Value LoadJson(const std::string &filename) {
     } else {
         throw std::runtime_error(absl::StrFormat("failed to read file %s", filename));
     }
+}
+
+void SaveJson(const Json::Value &j, const std::string &filename) {
+  std::ofstream ofs(filename, std::ios::out);
+  assert(ofs.is_open());
+  ofs << j;
+  ofs.close();
 }
 
 }   // namespace feh

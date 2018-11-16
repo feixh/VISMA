@@ -2,15 +2,15 @@
 // Created by visionlab on 2/19/18.
 //
 #pragma once
-
-#include "eigen_alias.h"
 #include <vector>
 #include <random>
 #include <chrono>
 
 // 3rd party
 #include "igl/AABB.h"
-#include "folly/dynamic.h"
+
+#include "alias.h"
+#include "utils.h"
 
 namespace feh {
 
@@ -24,40 +24,6 @@ Eigen::Matrix<T, DIM, 1> FindPlaneNormal(const Eigen::Matrix<T, Eigen::Dynamic, 
     n.normalize();
     return n;
 }
-
-/// \brief: Convert from std vector of Eigen vectors to Eigen matrix.
-template <typename T, int DIM=3>
-Eigen::Matrix<T, Eigen::Dynamic, DIM>
-StdVectorOfEigenVectorToEigenMatrix(const std::vector<Eigen::Matrix<T, DIM, 1> > &v) {
-    Eigen::Matrix<T, Eigen::Dynamic, DIM> out;
-    out.resize(v.size(), DIM);
-    for (int i = 0; i < v.size(); ++i) {
-        out.row(i) = v[i];
-    }
-    return out;
-}
-
-
-/// \brief: Convert from an Eigen matrix type to a std vector of Eigen vectors.
-template <typename T, int DIM=3>
-std::vector<Eigen::Matrix<T, DIM, 1>>
-EigenMatrixToStdVectorOfEigenVector(const Eigen::Matrix<T, Eigen::Dynamic, DIM> &m) {
-    std::vector<Eigen::Matrix<T, DIM, 1>> out(m.rows());
-    for (int i = 0; i < m.rows(); ++i) out[i] = m.row(i);
-    return out;
-};
-
-/// \brief: Convert from a std vector of Eigen vectors to an Eigen matrix.
-template <typename T, int DIM=3>
-Eigen::Matrix<T, DIM, 1> StdVectorOfEigenVectorMean(const std::vector<Eigen::Matrix<T, DIM, 1>> &v) {
-    return StdVectorOfEigenVectorToEigenMatrix(v).colwise().mean();
-};
-
-/// \brief: Compute the rotation matrix to align two vectors.
-template <typename T>
-Eigen::Matrix<T, 3, 3> RotationBetweenVectors(Eigen::Matrix<T, 3, 1> u, Eigen::Matrix<T, 3, 1> v) {
-    return Eigen::Quaternion<T>::FromTwoVectors(u, v).toRotationMatrix();
-};
 
 /// \brief: Sample point cloud from surface uniformly.
 template <typename T>
@@ -154,13 +120,13 @@ GenericErrorMetric<T> MeasureSurfaceError(
     const Eigen::Matrix<int, Eigen::Dynamic, 3> &Fs,
     const Eigen::Matrix<T, Eigen::Dynamic, 3> &Vt,
     const Eigen::Matrix<int, Eigen::Dynamic, 3> &Ft,
-    const folly::dynamic &options) {
+    const Json::Value &options) {
     // DENSELY SAMPLE FROM THE INPUT MESH
-    auto pts_s = SamplePointCloudFromMesh(Vs, Fs, options["num_samples"].getInt());
+    auto pts_s = SamplePointCloudFromMesh(Vs, Fs, options["num_samples"].asInt());
     // CONSTRUCT AABB TREE FROM TARGET MESH
     igl::AABB<Eigen::Matrix<T, Eigen::Dynamic, 3>, 3> tree;
     tree.init(Vt, Ft);
-    Eigen::Matrix<T, Eigen::Dynamic, 3> P = feh::StdVectorOfEigenVectorToEigenMatrix(pts_s); // query point list
+    Eigen::Matrix<T, Eigen::Dynamic, 3> P = StdVectorOfEigenVectorToEigenMatrix(pts_s); // query point list
     Eigen::VectorXd D2; // squared distance
     Eigen::VectorXi I;  // index into face list Ft
     Eigen::Matrix<T, Eigen::Dynamic, 3> C; // closest point in mesh, NOT necessarily a vertex
@@ -182,8 +148,8 @@ template <typename T>
 std::array<GenericErrorMetric<T>, 2> MeasurePoseError(
     const std::vector<Eigen::Matrix<T, 3, 4>> &Gs,
     const std::vector<Eigen::Matrix<T, 3, 4>> &Gt,
-    const folly::dynamic &options) {
-    T thresh = (T) options["dist_thresh"].getDouble();
+    const Json::Value &options) {
+    T thresh = (T) options["dist_thresh"].asDouble();
     int match_counter(0);
     std::vector<T> t_err, r_err;
     for (int i = 0; i < Gs.size(); ++i) {

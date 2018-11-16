@@ -7,9 +7,7 @@
 #include "igl/readOBJ.h"
 // sophus
 #include "sophus/se3.hpp"
-// folly
-#include "folly/FileUtil.h"
-#include "folly/json.h"
+#include "json/json.h"
 
 // feh
 #include "constrained_ICP.h"
@@ -113,12 +111,12 @@ open3d::RegistrationResult RegisterScenes(
     return result;
 }
 
-void MeshAlignment(const folly::dynamic &config) {
+void MeshAlignment(const Json::Value &config) {
     // EXTRACT PATHS
-    std::string database_dir = config["CAD_database_root"].getString();
+    std::string database_dir = config["CAD_database_root"].asString();
 
-    std::string dataroot = config["dataroot"].getString();
-    std::string dataset = config["dataset"].getString();
+    std::string dataroot = config["dataroot"].asString();
+    std::string dataset = config["dataset"].asString();
     std::string scene_dir = dataroot + "/" + dataset + "/";
     std::string fragment_dir = scene_dir + "/fragments/";
     // LOAD SCENE POINT CLOUD
@@ -126,23 +124,20 @@ void MeshAlignment(const folly::dynamic &config) {
     open3d::ReadPointCloudFromPLY(scene_dir + "/test.klg.ply", *scene);
     // READ GROUND TRUTH POSES
     std::string contents;
-    folly::readFile(folly::sformat("{}/alignment.json", fragment_dir).c_str(), contents);
-    folly::dynamic gt_json = folly::parseJson(folly::json::stripComments(contents));
+    auto gt_json = LoadJson(fragment_dir + "/alignment.json");
 
     // CONSTRUCT GROUND TRUTH UNORDERED_MAP
     std::unordered_map<int, Model> models;
     int counter(0);
-    for (auto &key_obj : gt_json.keys()) {
-        std::string key = key_obj.asString();
+    for (auto it = gt_json.begin(); it != gt_json.end(); ++it) {
+        std::string key = it.key().asString();
         auto &this_model = models[counter];
 
         this_model.model_to_scene_.block<3, 4>(0, 0) = GetMatrixFromJson<double, 3, 4>(gt_json, key);
         this_model.model_name_ = key.substr(0, key.find_last_of('_'));
-        std::cout << "reading ... " << folly::sformat("{}/{}.obj", database_dir, this_model.model_name_);
+        std::cout << absl::StrFormat("reading ... %s/%s.obj", database_dir, this_model.model_name_);
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(folly::sformat("{}/{}.obj", database_dir, this_model.model_name_),
-                     tmp,
-                     this_model.F_);
+        igl::readOBJ(absl::StrFormat("%s/%s.obj", database_dir, this_model.model_name_), tmp, this_model.F_);
         this_model.V_ = tmp.leftCols(3);
 
         std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
@@ -166,17 +161,16 @@ void MeshAlignment(const folly::dynamic &config) {
     }
 
     // LOAD RESULT FILE
-    std::string result_file = folly::sformat("{}/result.json", scene_dir);
+    std::string result_file = absl::StrFormat("%s/result.json", scene_dir);
     std::cout << "result file=" << result_file << "\n";
-    folly::readFile(result_file.c_str(), contents);
-    folly::dynamic result = folly::parseJson(folly::json::stripComments(contents));
+    auto result = LoadJson(result_file);
     // ITERATE AND GET THE LAST ONE
-    auto packet = result.at(result.size() - 1);
+    auto packet = result[result.size() - 1];
     auto scene_est = std::make_shared<open3d::PointCloud>();
     std::unordered_map<int, Model> models_est;
     for (const auto &obj : packet) {
         auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
-        std::cout << folly::format("id={}\nstatus={}\nshape={}\npose=\n",
+        std::cout << absl::StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
                                    obj["model_name"].asString())
@@ -186,7 +180,7 @@ void MeshAlignment(const folly::dynamic &config) {
         this_model.model_name_ = obj["model_name"].asString();
         this_model.model_to_scene_.block<3, 4>(0, 0) = pose;
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(folly::sformat("{}/{}.obj",
+        igl::readOBJ(absl::StrFormat("%s/%s.obj",
                                     database_dir,
                                     this_model.model_name_),
                      tmp, this_model.F_);
@@ -208,7 +202,7 @@ void MeshAlignment(const folly::dynamic &config) {
     auto T_ef_corvis = ret.transformation_;
     std::cout << "T_ef_corvis=\n" << T_ef_corvis << "\n";
     for (int i = 0; i < ret.correspondence_set_.size(); ++i) {
-        std::cout << folly::format("{}-{}\n", ret.correspondence_set_[i][0], ret.correspondence_set_[i][1]);
+        std::cout << absl::StrFormat("%d-%d\n", ret.correspondence_set_[i][0], ret.correspondence_set_[i][1]);
     }
 
     if (config["evaluation"]["ICP_refinement"].asBool()) {
@@ -222,14 +216,20 @@ void MeshAlignment(const folly::dynamic &config) {
                                     config["evaluation"]);
         T_ef_corvis = result.transformation_;
     }
-    // save the alignment
-    folly::dynamic out = folly::dynamic::object();
+    // // save the alignment
+    // folly::dynamic out = folly::dynamic::object();
+    // WriteMatrixToJson(out, "T_ef_corvis", T_ef_corvis.block<3, 4>(0, 0));
+    // std::string output_path = scene_dir + "/result_alignment.json";
+    // folly::writeFile(folly::toPrettyJson(out), output_path.c_str());
+    Json::Value out;
     WriteMatrixToJson(out, "T_ef_corvis", T_ef_corvis.block<3, 4>(0, 0));
     std::string output_path = scene_dir + "/result_alignment.json";
-    folly::writeFile(folly::toPrettyJson(out), output_path.c_str());
+    std::ofstream json_out(output_path, std::ios::out);
+    assert(json_out.is_open());
+    json_out << out;
     std::cout << "T_ef_corvis written to " << output_path << "\n";
 
-//    open3d::ReadPointCloudFromPLY(config["scene_directory"].getString() + "/test.klg.ply", *scene);
+//    open3d::ReadPointCloudFromPLY(config["scene_directory"].asString() + "/test.klg.ply", *scene);
     // NOW LETS LOOK AT THE ESTIMATED SCENE IN RGB-D SCENE FRAME
     for (const auto &kv : models_est) {
         const auto &this_model = kv.second;
@@ -244,7 +244,7 @@ void MeshAlignment(const folly::dynamic &config) {
 open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> scene,
                                         const std::unordered_map<int, Model> &src,
                                         const Eigen::Matrix4d &T_scene_src,
-                                        const folly::dynamic &options) {
+                                        const Json::Value &options) {
     // CONSTRUCT ESTIMATED SCENE
     auto scene_est = std::make_shared<open3d::PointCloud>();
     for (const auto &kv : src) {
@@ -255,25 +255,25 @@ open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> sce
         *scene_est += *model_ptr;
     }
 
-    scene = open3d::VoxelDownSample(*scene, options.getDefault("voxel_size", 0.02).asDouble());
+    scene = open3d::VoxelDownSample(*scene, options.get("voxel_size", 0.02).asDouble());
     open3d::RegistrationResult result;
     if (options["use_point_to_plane"].asBool()) {
         result = open3d::RegistrationICP(*scene_est,
                                         *scene,
-                                        options.getDefault("max_distance", 0.05).asDouble(),
+                                        options.get("max_distance", 0.05).asDouble(),
                                         T_scene_src,
                                         open3d::TransformationEstimationPointToPlane());
     } else {
         result = open3d::RegistrationICP(*scene_est,
                                         *scene,
-                                        options.getDefault("max_distance", 0.05).asDouble(),
+                                        options.get("max_distance", 0.05).asDouble(),
                                         T_scene_src);
     }
-    std::cout << folly::format("fitness={}; inlier_rmse={}\n", result.fitness_, result.inlier_rmse_);
+    std::cout << absl::StrFormat("fitness=%f; inlier_rmse=%f\n", result.fitness_, result.inlier_rmse_);
     return result;
 }
 
-void QuantitativeEvaluation(folly::dynamic config) {
+void QuantitativeEvaluation(Json::Value config) {
     // disable original mesh
     // CHECK(!config["result_visualization"]["show_original_scene"].getBool());
 
@@ -306,7 +306,9 @@ void QuantitativeEvaluation(folly::dynamic config) {
 
     std::cout << TermColor::cyan << "Computing pose error ..." << TermColor::endl;
     // searching NN within threshold, and compute the average distance
-    auto pose_stats = MeasurePoseError(Gr, Gg, folly::dynamic::object("dist_thresh", 0.5));
+    Json::Value pose_error_cfg;
+    pose_error_cfg["dist_thresh"] = 0.5;
+    auto pose_stats = MeasurePoseError(Gr, Gg, pose_error_cfg);
     std::cout << "translation errors:\n";
     PrintErrorMetric(pose_stats[0]);
     std::cout << "rotation errors:\n";
@@ -320,35 +322,43 @@ void QuantitativeEvaluation(folly::dynamic config) {
 
     // measure surface error
     std::cout << TermColor::cyan << "Computing surface error ..." << TermColor::endl;
-    auto stats = MeasureSurfaceError(Vr, Fr, Vg, Fg,
-                                     folly::dynamic::object("num_samples", std::min<uint64_t>(500000, Fg.rows()*100)));
+    Json::Value surface_error_cfg;
+    surface_error_cfg["num_samples"] = std::min<uint64_t>(500000, Fg.rows()*100);
+    auto stats = MeasureSurfaceError(Vr, Fr, Vg, Fg, surface_error_cfg);
     std::cout << "surface errors:\n";
     PrintErrorMetric(stats);
 
     auto save_metric = [] (std::string filename, const GenericErrorMetric<double>& metric) {
-        folly::dynamic out_json = folly::dynamic::object
-            ("mean", metric.mean_)
-            ("std", metric.std_)
-            ("min", metric.min_)
-            ("max", metric.max_)
-            ("median", metric.median_);
-        folly::writeFile(folly::toPrettyJson(out_json), filename.c_str());
+        // folly::dynamic out_json = folly::dynamic::object
+        //     ("mean", metric.mean_)
+        //     ("std", metric.std_)
+        //     ("min", metric.min_)
+        //     ("max", metric.max_)
+        //     ("median", metric.median_);
+        // folly::writeFile(folly::toPrettyJson(out_json), filename.c_str());
+      Json::Value out_json;
+      out_json["mean"] = metric.mean_;
+      out_json["std"] = metric.std_;
+      out_json["min"] = metric.min_;
+      out_json["max"] = metric.max_;
+      out_json["median"] = metric.median_;
+      SaveJson(out_json, filename);
     };
 
     // write out result
-    std::string error_filename = folly::sformat("{}/{}/surface_error.json",
-                                                config["dataroot"].getString(),
-                                                config["dataset"].getString());
+    std::string error_filename = absl::StrFormat("%s/%s/surface_error.json",
+                                                config["dataroot"].asString(),
+                                                config["dataset"].asString());
     save_metric(error_filename, stats);
 
-    error_filename = folly::sformat("{}/{}/translation_error.json",
-                                    config["dataroot"].getString(),
-                                    config["dataset"].getString());
+    error_filename = absl::StrFormat("%s/%s/translation_error.json",
+                                    config["dataroot"].asString(),
+                                    config["dataset"].asString());
     save_metric(error_filename, pose_stats[0]);
 
-    error_filename = folly::sformat("{}/{}/rotation_error.json",
-                                    config["dataroot"].getString(),
-                                    config["dataset"].getString());
+    error_filename = absl::StrFormat("%s/%s/rotation_error.json",
+                                    config["dataroot"].asString(),
+                                    config["dataset"].asString());
     save_metric(error_filename, pose_stats[1]);
 
 }

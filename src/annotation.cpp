@@ -7,16 +7,15 @@
 #include "IO/IO.h"
 #include "Visualization/Visualization.h"
 #include "Core/Core.h"
+
 #include "igl/readOBJ.h"
+
 #include "sophus/se3.hpp"
-#include "folly/FileUtil.h"
-#include "folly/Format.h"
-#include "folly/json.h"
+#include "json/json.h"
 
 // feh
 #include "constrained_icp.h"
 #include "geometry.h"
-#include "io_utils.h"
 
 namespace feh {
 

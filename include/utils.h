@@ -347,10 +347,10 @@ Eigen::Matrix<T, N, 1> GetVectorFromJson(
 
 template<typename Derived>
 void WriteMatrixToJson(Json::Value &d, const std::string &key, const Eigen::MatrixBase<Derived> &m) {
-    // d[key] = Json::Value;
+    d[key] = Json::Value(Json::arrayValue);
     for (int i = 0; i < m.rows(); ++i)
         for (int j = 0; j < m.cols(); ++j)
-            d[key].append(m(i, j));
+            d[key].append(Json::Value(m(i, j)));
 }
 
 /// \brief: Save opencv mat to file in txt or binary form (if the flag binary is turned on).
@@ -372,5 +372,6 @@ void SaveMatToFile(const std::string &filename, const cv::Mat &mat, bool binary=
 void MergeJson(Json::Value &a, const Json::Value &b);
 Json::Value LoadJson(const std::string &filename);
 
+void SaveJson(const Json::Value &j, const std::string &filename);
 
 }

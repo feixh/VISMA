@@ -1,13 +1,11 @@
 #include "dataloader.h"
 
 // 3rd party
-#include "folly/FileUtil.h"
-#include "folly/dynamic.h"
-#include "folly/json.h"
+#include "json/json.h"
+#include "opencv2/imgproc/imgproc.hpp"
 
 // own
 #include "utils.h"
-#include "opencv2/imgproc/imgproc.hpp"
 
 namespace feh {
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "eigen_alias.h"
+#include "alias.h"
 
 // stl
 #include <unordered_map>
@@ -7,7 +7,6 @@
 #include <list>
 
 // 3rd party
-#include "folly/dynamic.h"
 #include "Core/Core.h"
 
 namespace feh {
@@ -34,13 +33,13 @@ struct Model {
 ////////////////////////////////////////////////////////////
 
 /// \brief: Annotation procedure. Automated tool to align models to scene.
-void AnnotationTool(const folly::dynamic &config);
+void AnnotationTool(const Json::Value &config);
 
 /// \brief: Enumerate possible azimuth rotation and perform ICP to find the best transformation to align the
 /// model to the scene. Both model and scene are represented as a point cloud.
 Eigen::Matrix4d RegisterModelToScene(std::shared_ptr <open3d::PointCloud> model,
                                      std::shared_ptr <open3d::PointCloud> scene,
-                                     const folly::dynamic options);
+                                     const Json::Value options);
 /// \brief: Helper.
 double MinY(const std::vector<Eigen::Vector3d> &v);
 
@@ -49,7 +48,7 @@ double MinY(const std::vector<Eigen::Vector3d> &v);
 ////////////////////////////////////////////////////////////
 
 /// \brief: Align semantic mapping and RGB-D reconstruction for quantitative evaluation.
-void MeshAlignment(const folly::dynamic &config);
+void MeshAlignment(const Json::Value &config);
 
 /// \Brief: Find the rigid body transformation to align the two lists of objects.
 /// Method: find two objects with same shape name in the tgt and src. Compute the relative
@@ -85,7 +84,7 @@ Eigen::Matrix4d OptimizeAlignment(
 open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> scene,
                                         const std::unordered_map<int, Model> &src,
                                         const Eigen::Matrix4d &T_scene_src,
-                                        const folly::dynamic &options);
+                                        const Json::Value &options);
 
 
 /// \brief: Assemble the scene mesh by:
@@ -95,7 +94,7 @@ open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> sce
 /// \param objects: List of shape name, pose pairs.
 /// \param alignment: Corvis to EF alignment.
 /// \param vertices, faces: Assembled mesh.
-void AssembleScene(const folly::dynamic &config,
+void AssembleScene(const Json::Value &config,
                    const std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4> > > &objects,
                    const Eigen::Matrix<double, 3, 4> &alignment,
                    std::vector<Eigen::Matrix<double, 3, 1>> &vertices,
@@ -103,20 +102,20 @@ void AssembleScene(const folly::dynamic &config,
 /// \brief: Visualize semantic reconstruction with sparse point cloud from VIO.
 /// \param V, F: optional output vertex and face arrays in ElasticFusion frame
 /// \param G: optional output array of object poses aligned to ElasticFusion frame
-void AssembleResult(const folly::dynamic &config,
+void AssembleResult(const Json::Value &config,
                     Eigen::Matrix<double, Eigen::Dynamic, 3> *V=nullptr,
                     Eigen::Matrix<int, Eigen::Dynamic, 3> *F=nullptr,
                     std::vector<Eigen::Matrix<double, 3, 4>> *G=nullptr);
-void VisualizeResult(const folly::dynamic &config);
+void VisualizeResult(const Json::Value &config);
 /// \brief: Visualize ground truth with annotation.
 /// \param V, F: optional output vertex and face arrays in ElasticFusion frame
 /// \param G: optional output array of object poses aligned to ElasticFusion frame
-void AssembleGroundTruth(const folly::dynamic &config,
+void AssembleGroundTruth(const Json::Value &config,
                          Eigen::Matrix<double, Eigen::Dynamic, 3> *V=nullptr,
                          Eigen::Matrix<int, Eigen::Dynamic, 3> *F=nullptr,
                          std::vector<Eigen::Matrix<double, 3, 4>> *G=nullptr);
 /// \brief: Entrance to quantitative evaluation of surface reconstruction.
 /// MeasureSurfaceError is called internally to compute error measure.
-void QuantitativeEvaluation(folly::dynamic config);
+void QuantitativeEvaluation(Json::Value config);
 
 }
