@@ -1,22 +1,22 @@
 # VISMA dataset tools
 
-VISMA stands for *V*isual *I*nertial *S*emantic *MA*pping and contains both RGB videos and inertial measurements for developing object-level semantic mapping systems.
+VISMA stands for **V**isual **I**nertial **S**emantic **MA**pping and contains both RGB videos and inertial measurements for developing object-level (semantic) mapping systems.
 
 We gave a live demo of our system at CVPR 2016 followed by a CVPR 2017 paper, where objects are modeled as 3D bounding boxes with semantic labels attached.
 
-In our ECCV 2017 paper, the system has been further improved to model fine-grained object shapes as polygon meshes.
+In the follow-up ECCV 2017 paper, the system has been further improved to model fine-grained object shapes as polygon meshes.
 
 If you find VISMA or this repo useful and use them in your work, please cite the following papers:
 
-- Visual-Inertial Object Detection and Mapping.\\
-    Xiaohan Fei, Stefano Soatto\\
-    To appear in *Proceedings of European Conference on Computer Vision*, 2018.\\
+- Visual-Inertial Object Detection and Mapping.
+    Xiaohan Fei, Stefano Soatto 
+    In *Proceedings of European Conference on Computer Vision*, 2018.
     \[[paper][eccv18_paper]\]-\[[poster][eccv18_poster]\]-\[[video][eccv18_video]\]
 
 
-- Visual-Inertial-Semantic Scene Representation for 3D Object Detection.\\
-    Jingming Dong\*, Xiaohan Fei\*, Stefano Soatto.\\
-    In *Proceedings of Computer Vision and Pattern Recognition*, 2017.\\
+- Visual-Inertial-Semantic Scene Representation for 3D Object Detection.
+    Jingming Dong\*, Xiaohan Fei\*, Stefano Soatto.
+    In *Proceedings of Computer Vision and Pattern Recognition*, 2017.
     \[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
 
 <!-- ECCV18 -->
@@ -31,7 +31,7 @@ If you find VISMA or this repo useful and use them in your work, please cite the
 
 ## Data
 
-Data can be downloaded from [here](https://www.dropbox.com/sh/fr9zt7r2nb3r9ll/AADQExSkZsykwk6i08gmUmOsa?dl=0).
+Data is available in dropbox [here](https://www.dropbox.com/sh/fr9zt7r2nb3r9ll/AADQExSkZsykwk6i08gmUmOsa?dl=0).
 
 ## Install
 
