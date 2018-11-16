@@ -1,6 +1,33 @@
 # VISMA dataset tools
 
-VISMA stands for Visual Inertial Semantic Mapping and contains both RGB videos and inertial measurements for developing object-level (semantic) mapping systems.
+VISMA stands for *V*isual *I*nertial *S*emantic *MA*pping and contains both RGB videos and inertial measurements for developing object-level semantic mapping systems.
+
+We gave a live demo of our system at CVPR 2016 followed by a CVPR 2017 paper, where objects are modeled as 3D bounding boxes with semantic labels attached.
+
+In our ECCV 2017 paper, the system has been further improved to model fine-grained object shapes as polygon meshes.
+
+If you find VISMA or this repo useful and use them in your work, please cite the following papers:
+
+- Visual-Inertial Object Detection and Mapping.\\
+    Xiaohan Fei, Stefano Soatto\\
+    To appear in *Proceedings of European Conference on Computer Vision*, 2018.\\
+    \[[paper][eccv18_paper]\]-\[[poster][eccv18_poster]\]-\[[video][eccv18_video]\]
+
+
+- Visual-Inertial-Semantic Scene Representation for 3D Object Detection.\\
+    Jingming Dong\*, Xiaohan Fei\*, Stefano Soatto.\\
+    In *Proceedings of Computer Vision and Pattern Recognition*, 2017.\\
+    \[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
+
+<!-- ECCV18 -->
+[eccv18_paper]: http://openaccess.thecvf.com/content_ECCV_2018/papers/Xiaohan_Fei_Visual-Inertial_Object_Detection_ECCV_2018_paper.pdf
+[eccv18_poster]: https://www.dropbox.com/s/n0m5lsgodm99x5q/eccv18_poster.pdf?dl=0 
+[eccv18_video]: https://youtu.be/TZTriqQm6nU
+
+<!-- CVPR17 -->
+[cvpr17_paper]: http://openaccess.thecvf.com/content_cvpr_2017/papers/Dong_Visual-Inertial-Semantic_Scene_Representation_CVPR_2017_paper.pdf
+[cvpr17_poster]: https://www.dropbox.com/s/0phis714b5pnagk/cvpr17_poster.pdf?dl=0
+[cvpr17_video]: https://youtu.be/tbxQUXdiXKo
 
 ## Data
 
@@ -12,12 +39,8 @@ Requirements
 - `OpenCV`: Image I/O and processing. Easy way is to install OpenCV via your favorite package manager. 
 - `Eigen`: Linear algebra and matrix manipulation. Install via package manager or build from source.
 - `Protobuf`: Utilities for protocol buffer. Install via package manager.
-- `folly`: Utilities from facebook. Follow instructions on the github page of folly to install.
-    - Note, to build folly as a shared library, do `cmake .. -DBUILD_SHARED_LIBS=ON -DCXX_CMAKE_FLAGS=-fPIC`
-- `Sophus`: Library for SE(3) and SO(3) groups. We provide it in the thirdparty directory. Follow the following instruction to build and install locally.
-    - Go to thirdparty/Sophus and `make build`.
-    - Go to the newly created build folder and `cmake .. -DCMAKE_INSTALL_PREFIX=../`
-    - `make install`
+- `abseil-cpp`: Utilities from google. No need to build this manually, since the repo is `add_subdirectory`-ed into the main build script.
+- `jsoncpp`: I/O for json files. No need to build this manually, since the repo is `add_subdirectory`-ed into the main build script.
     
     
 Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
@@ -27,6 +50,7 @@ To build the evaluation code, you need the following extra dependecies:
 - `libigl`: Mesh I/O and geometry processing. This is a header only library, clone the repo into thirdparty directory as libigl.
 
 We provide a version of Open3D in thirdparty directory. First, go to thirdparty/Open3D and follow the instruction on `http://www.open3d.org/docs/getting_started.html#ubuntu` to build, i.e.:
+
 ```
 util/scripts/install-deps-ubuntu.sh
 mkdir build
@@ -66,6 +90,8 @@ Folder `RGBD` contains all the data needed to evaluate semantic reconstruction f
 For example usage of data loader, see `example/example_load.cpp` and run `example_load DATASET_DIRECTORY` in the example sub-directory. The input RGB image, pre-computed edge map and object proposals, camera pose from SLAM will be loaded. To load the sparse reconstruction, 2D tracklets of feature points and other information from SLAM, see the protocol buffer file in `protocols/vlslam.proto` and modify the dataset loader accordingly.
 
 
+<!-
+
 ### Evaluation
 
 To evaluate the semantic reconstruction, one needs to provide the following paths in the configuration file `cfg/tool.json`:
@@ -75,8 +101,9 @@ To evaluate the semantic reconstruction, one needs to provide the following path
 
 We save our semantic mapping results over time in `result.json` file and put it in the dataset folder, say, under `clutter1`. `result.json` contains per time instant semantic reconstruction, where the name of the object models in the CAD database, their pose and id in the SLAM frame are provided.
 
-
 To evaluate the semantic reconstruction, we first align the semantic reconstruction to the (pseudo-)ground truth RGB-D reconstruction since both reconstructions are upto a global rigid body transformation and live in their own coordinate system. Function `MeshAlignment` is called to align them. Once aligned, the transformation will be written to `result_alignment.json` in the dataset folder. In addition, an augmented view with semantic reconstruction overlaid on the RGB-D reconstruction will be written to  `augmented_view.ply`. The following files will be generated to hold quantitative results:
 - `surface_error.json`
 - `rotation_error.json`
 - `translation_error.json`
+
+>
