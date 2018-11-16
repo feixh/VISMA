@@ -4,7 +4,7 @@ VISMA stands for **V**isual **I**nertial **S**emantic **MA**pping and contains b
 
 We gave a live demo of our system at CVPR 2016 followed by a CVPR 2017 paper, where objects are modeled as 3D bounding boxes with semantic labels attached.
 
-In the follow-up ECCV 2017 paper, the system has been further improved to model fine-grained object shapes as polygon meshes.
+In the follow-up ECCV 2018 paper, the system has been further improved to model fine-grained object shapes as polygon meshes.
 
 If you find VISMA or this repo useful and use them in your work, please cite the following papers:
 
@@ -35,13 +35,25 @@ If you find VISMA or this repo useful and use them in your work, please cite the
 [cvpr17_poster]: https://www.dropbox.com/s/0phis714b5pnagk/cvpr17_poster.pdf?dl=0
 [cvpr17_video]: https://youtu.be/tbxQUXdiXKo
 
+## Demo
+
+ECCV 18
+
+<iframe width="640" height="480" src="https://www.youtube.com/embed/TZTriqQm6nU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+CVPR 17
+
+<iframe width="640" height="480" src="https://youtu.be/tbxQUXdiXKo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+
 ## Data
 
 Data is available in dropbox [here](https://www.dropbox.com/sh/fr9zt7r2nb3r9ll/AADQExSkZsykwk6i08gmUmOsa?dl=0).
 
 ## Install
 
-Requirements
+Dependencies
+
 - `OpenCV`: Image I/O and processing. Easy way is to install OpenCV via your favorite package manager. 
 - `Eigen`: Linear algebra and matrix manipulation. Install via package manager or build from source.
 - `Protobuf`: Utilities for protocol buffer. Install via package manager.
