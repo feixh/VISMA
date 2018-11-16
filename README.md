@@ -35,16 +35,6 @@ If you find VISMA or this repo useful and use them in your work, please cite the
 [cvpr17_poster]: https://www.dropbox.com/s/0phis714b5pnagk/cvpr17_poster.pdf?dl=0
 [cvpr17_video]: https://youtu.be/tbxQUXdiXKo
 
-## Demo
-
-ECCV 18
-
-<iframe width="640" height="480" src="https://www.youtube.com/embed/TZTriqQm6nU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
-CVPR 17
-
-<iframe width="640" height="480" src="https://youtu.be/tbxQUXdiXKo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
 
 ## Data
 
