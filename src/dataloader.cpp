@@ -38,8 +38,8 @@ dataroot_(dataroot) {
         LOG(FATAL) << "FATAL::failed to read bounding box lisst @" << dataroot_;
     }
 
-    CHECK_EQ(png_files_.size(), edge_files_.size());
-    CHECK_EQ(png_files_.size(), bbox_files_.size());
+    // CHECK_EQ(png_files_.size(), edge_files_.size());
+    // CHECK_EQ(png_files_.size(), bbox_files_.size());
     size_ = png_files_.size();
 }
 
@@ -72,30 +72,34 @@ bool VlslamDatasetLoader::Grab(int i,
     feh::Vec3f Wg(packet_ptr->wg(0), packet_ptr->wg(1), 0);
     Rg = Sophus::SO3f::exp(Wg);
 
-    std::string png_file = png_files_[i];
-    std::string edge_file = edge_files_[i];
-    std::string bbox_file = bbox_files_[i];
-
     // read image
+    std::string png_file = png_files_[i];
     image = cv::imread(png_file);
     CHECK(!image.empty()) << "empty image: " << png_file;
 
-    // read edgemap
-    if (!feh::io::LoadEdgeMap(edge_file, edgemap)) {
-        LOG(FATAL) << "failed to load edge map @ " << edge_file;
+    // read edge map if have any
+    if (i < edge_files_.size()) {
+        std::string edge_file = edge_files_[i];
+        if (!feh::io::LoadEdgeMap(edge_file, edgemap)) {
+            LOG(FATAL) << "failed to load edge map @ " << edge_file;
+        }
     }
 
-    // read bounding box
-    std::ifstream in_file(bbox_file, std::ios::in);
-    CHECK(in_file.is_open()) << "FATAL::failed to open bbox file @ " << bbox_file;
-    bboxlist.ParseFromIstream(&in_file);
-    in_file.close();
+    if (i < bbox_files_.size()) {
+        std::string bbox_file = bbox_files_[i];
+        // read bounding box
+        std::ifstream in_file(bbox_file, std::ios::in);
+        CHECK(in_file.is_open()) << "FATAL::failed to open bbox file @ " << bbox_file;
+        bboxlist.ParseFromIstream(&in_file);
+        in_file.close();
+    }
     return true;
 }
 
-std::unordered_map<int64_t, std::array<double, 6>> VlslamDatasetLoader::GrabPointCloud(int i,
+
+std::unordered_map<int64_t, std::array<ftype, 6>> VlslamDatasetLoader::GrabPointCloud(int i,
                                                                                   const cv::Mat &img) {
-    std::unordered_map<int64_t, std::array<double, 6>> out;
+    std::unordered_map<int64_t, std::array<ftype, 6>> out;
     vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
     for (auto f : packet_ptr->features()) {
         if (f.status() == vlslam_pb::Feature_Status_INSTATE
@@ -109,22 +113,22 @@ std::unordered_map<int64_t, std::array<double, 6>> VlslamDatasetLoader::GrabPoin
                 color[1] >>= 1;
                 color[2] >>= 1;
                 out[f.id()] = {f.xw(0), f.xw(1), f.xw(2),
-                               static_cast<double>(color[0]),
-                               static_cast<double>(color[1]),
-                               static_cast<double>(color[2])};
+                               static_cast<ftype>(color[0]),
+                               static_cast<ftype>(color[1]),
+                               static_cast<ftype>(color[2])};
             } else {
                 out[f.id()] = {f.xw(0), f.xw(1), f.xw(2),
-                               static_cast<double>(color[0]),
-                               static_cast<double>(color[1]),
-                               static_cast<double>(color[2])};
+                               static_cast<ftype>(color[0]),
+                               static_cast<ftype>(color[1]),
+                               static_cast<ftype>(color[2])};
             }
         }
     }
     return out;
 };
 
-std::unordered_map<int64_t, std::array<double, 3>> VlslamDatasetLoader::GrabSparseDepth(int i) {
-    std::unordered_map<int64_t, std::array<double, 3>> out;
+std::unordered_map<int64_t, std::array<ftype, 3>> VlslamDatasetLoader::GrabSparseDepth(int i) {
+    std::unordered_map<int64_t, std::array<ftype, 3>> out;
     vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
 
 

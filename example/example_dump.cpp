@@ -65,69 +65,56 @@ int main(int argc, char *argv[]) {
         std::cout << each << " ";
     }
 
-    cv::Mat prev_img, next_img;
+    Eigen::Matrix3f K;
+    // parameters 
+    K << params[0], 0, params[2],
+      0, params[1], params[3],
+      0, 0, 1;
+    std::ofstream Kout(folly::sformat("{}/K.txt", argv[2]), std::ios::out);
+    Kout << K;
+    Kout.close();
+
     for (int i = 0; i < loader->size(); ++i) {
-        if (i == 0 || i+1 == loader->size()) continue;
-        cv::Mat img, edgemap;   // image and edge map
-        vlslam_pb::BoundingBoxList bboxlist;    // list of bounding boxes
-        Sophus::SE3f gwc, gwc1, gwc2;   // camera to world transformation
+        Sophus::SE3f gwc;
         Sophus::SO3f Rg;    // rotation to align with gravity
+        cv::Mat img, edgemap;
+        vlslam_pb::BoundingBoxList bboxlist;
 
         loader->Grab(i, img, edgemap, bboxlist, gwc, Rg);   // grab datum
-        loader->Grab(i-1, prev_img, edgemap, bboxlist, gwc1, Rg);   // grab datum
-        loader->Grab(i+1, next_img, edgemap, bboxlist, gwc2, Rg);   // grab datum
         auto depth_samples = loader->GrabSparseDepth(i);
 
-        int rows = img.rows / 2, cols = img.cols / 2;
-        cv::Mat img_down{rows, cols, CV_8UC3}; 
-        cv::Mat prev_img_down{rows, cols, CV_8UC3};
-        cv::Mat next_img_down{rows, cols, CV_8UC3};
-        cv::pyrDown(img, img_down);
-        cv::pyrDown(prev_img, prev_img_down);
-        cv::pyrDown(next_img, next_img_down);
-
-        cv::Mat seq{rows, cols * 3, CV_8UC3};
-        img_down.copyTo(seq(cv::Rect(cols, 0, cols, rows)));
-        prev_img_down.copyTo(seq(cv::Rect(0, 0, cols, rows)));
-        next_img_down.copyTo(seq(cv::Rect(cols*2, 0, cols, rows)));
-
-        std::cout << "g(world <- camera)=\n" << gwc.matrix3x4() << std::endl;
-        std::cout << "Rg=\n" << Rg.matrix() << std::endl;
+        // std::cout << "g(world <- camera)=\n" << gwc.matrix3x4() << std::endl;
+        // std::cout << "Rg=\n" << Rg.matrix() << std::endl;
 
         // write out pose
         std::ofstream fid_pose;
-        try {
-            auto g1c = gwc1.inverse() * gwc;     // current to previous one
-            auto g2c = gwc2.inverse() * gwc;     // current to next one
-            fid_pose.open(folly::sformat("{}/pose/{:06d}.txt", argv[2], i));
-            fid_pose << g1c.matrix3x4();
-            fid_pose << std::endl;
-            fid_pose << g2c.matrix3x4();
-            fid_pose.close();
-        } catch (const std::exception &) {
-            exit(-1);
-        }
+        fid_pose.open(folly::sformat("{}/pose/{:06d}.txt", argv[2], i));
+        fid_pose << gwc.matrix();
+        fid_pose.close();
 
         // write out sparse depth
         std::ofstream fid_depth;
         try {
             fid_depth.open(folly::sformat("{}/depth/{:06d}.txt", argv[2], i));
             for (const auto &s : depth_samples) {
-                fid_depth << s.second[0] / downsample_rate << " " 
-                          << s.second[1] / downsample_rate << " " 
-                          << s.second[2] << std::endl;
+                if (s.second[1] > 0) {
+                    fid_depth << s.second[0] << " " 
+                              << s.second[1] << " " 
+                              << s.second[2] << std::endl;
+                }
             }
             fid_depth.close();
         } catch (const std::exception &) {
             exit(-1);
         }
 
-        cv::imshow("image", img_down);
-        // cv::imshow("edge map", edgemap);
-        cv::waitKey(30);
         // write out image
-        cv::imwrite(folly::sformat("{}/image/{:06d}.jpg", argv[2], i), seq);
+        cv::imwrite(folly::sformat("{}/image/{:06d}.jpg", argv[2], i), img);
 
+        cv::imshow("image", img);
+        // cv::imshow("edge map", edgemap);
+        char ckey = cv::waitKey(30);
+        if (ckey == 'q') break;
     }
 }
 

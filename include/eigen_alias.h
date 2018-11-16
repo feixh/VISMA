@@ -5,6 +5,7 @@
 namespace feh {
 
 using FloatType = float;
+using ftype = FloatType;
 
 using Mat3 = Eigen::Matrix<FloatType, 3, 3>;
 using Vec3 = Eigen::Matrix<FloatType, 3, 1>;
