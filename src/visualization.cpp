@@ -6,7 +6,7 @@
 #include "json/json.h"
 // libigl
 #include "igl/readOBJ.h"
-#include <igl/writeOBJ.h>
+#include "igl/writeOBJ.h"
 #include "igl/readPLY.h"
 // Open3D
 #include "IO/IO.h"
