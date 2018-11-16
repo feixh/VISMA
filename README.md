@@ -96,7 +96,7 @@ Folder `RGBD` contains all the data needed to evaluate semantic reconstruction f
 For example usage of data loader, see `example/example_load.cpp` and run `example_load DATASET_DIRECTORY` in the example sub-directory. The input RGB image, pre-computed edge map and object proposals, camera pose from SLAM will be loaded. To load the sparse reconstruction, 2D tracklets of feature points and other information from SLAM, see the protocol buffer file in `protocols/vlslam.proto` and modify the dataset loader accordingly.
 
 
-<!-
+<!--
 
 ### Evaluation
 
@@ -113,4 +113,4 @@ To evaluate the semantic reconstruction, we first align the semantic reconstruct
 - `rotation_error.json`
 - `translation_error.json`
 
->
+-->
