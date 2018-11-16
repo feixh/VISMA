@@ -3,7 +3,7 @@
 //
 // Common utilities.
 #pragma once
-#include "eigen_alias.h"
+#include "alias.h"
 
 // stl
 #include <chrono>
@@ -11,12 +11,14 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 #include <fstream>
 
-// thirdparty
-#include "opencv2/core.hpp"
-#include "folly/dynamic.h"
+// 3rdparty
+#include "opencv2/core/core.hpp"
+#include "glog/logging.h"
+#include "json/json.h"
+#include "absl/strings/str_format.h"
+
 
 namespace feh {
 
@@ -127,15 +129,15 @@ public:
 
 /// \brief generate a random matrix of dimension N x M
 template<int N, int M = N>
-Eigen::Matrix<FloatType, N, M> RandomMatrix(
-    FloatType meanVal = 0.0,
-    FloatType stdVal = 1.0,
+Eigen::Matrix<ftype, N, M> RandomMatrix(
+    ftype meanVal = 0.0,
+    ftype stdVal = 1.0,
     std::shared_ptr<std::knuth_b> p_engine = nullptr) {
 
-    using FloatType = FloatType;
+    using ftype = ftype;
 
-    std::normal_distribution<FloatType> dist(meanVal, stdVal);
-    Eigen::Matrix<FloatType, N, M> v;
+    std::normal_distribution<ftype> dist(meanVal, stdVal);
+    Eigen::Matrix<ftype, N, M> v;
     if (p_engine == nullptr) {
         std::default_random_engine engine;
         for (int i = 0; i < N; ++i)
@@ -154,15 +156,15 @@ Eigen::Matrix<FloatType, N, M> RandomMatrix(
 
 /// \brief generate a random vecotr of dimension N
 template<int N>
-Eigen::Matrix<FloatType, N, 1> RandomVector(
-    FloatType meanVal = 0.0,
-    FloatType stdVal = 1.0,
+Eigen::Matrix<ftype, N, 1> RandomVector(
+    ftype meanVal = 0.0,
+    ftype stdVal = 1.0,
     std::shared_ptr<std::knuth_b> p_engine = nullptr) {
 
-    using FloatType = FloatType;
+    using ftype = ftype;
 
-    std::normal_distribution<FloatType> dist(meanVal, stdVal);
-    Eigen::Matrix<FloatType, N, 1> v;
+    std::normal_distribution<ftype> dist(meanVal, stdVal);
+    Eigen::Matrix<ftype, N, 1> v;
     if (p_engine == nullptr) {
         std::default_random_engine engine;
         for (int i = 0; i < N; ++i) {
@@ -179,7 +181,7 @@ Eigen::Matrix<FloatType, N, 1> RandomVector(
 
 /// \brief detect if any compoennt of a matrix is nan
 template<int N, int M = 1>
-bool anynan(const Eigen::Matrix<FloatType, N, M> &m) {
+bool anynan(const Eigen::Matrix<ftype, N, M> &m) {
     for (int i = 0; i < N; ++i)
         for (int j = 0; j < M; ++j)
             if (std::isnan(m(i, j)))
@@ -193,6 +195,41 @@ typename std::underlying_type<Enumeration>::type as_integer(Enumeration const va
     using type = typename std::underlying_type<Enumeration>::type;
     return static_cast<type>(value);
 }
+
+
+/// \brief: Convert from std vector of Eigen vectors to Eigen matrix.
+template <typename T, int DIM=3>
+Eigen::Matrix<T, Eigen::Dynamic, DIM>
+StdVectorOfEigenVectorToEigenMatrix(const std::vector<Eigen::Matrix<T, DIM, 1> > &v) {
+    Eigen::Matrix<T, Eigen::Dynamic, DIM> out;
+    out.resize(v.size(), DIM);
+    for (int i = 0; i < v.size(); ++i) {
+        out.row(i) = v[i];
+    }
+    return out;
+}
+
+
+/// \brief: Convert from an Eigen matrix type to a std vector of Eigen vectors.
+template <typename T, int DIM=3>
+std::vector<Eigen::Matrix<T, DIM, 1>>
+EigenMatrixToStdVectorOfEigenVector(const Eigen::Matrix<T, Eigen::Dynamic, DIM> &m) {
+    std::vector<Eigen::Matrix<T, DIM, 1>> out(m.rows());
+    for (int i = 0; i < m.rows(); ++i) out[i] = m.row(i);
+    return out;
+};
+
+/// \brief: Convert from a std vector of Eigen vectors to an Eigen matrix.
+template <typename T, int DIM=3>
+Eigen::Matrix<T, DIM, 1> StdVectorOfEigenVectorMean(const std::vector<Eigen::Matrix<T, DIM, 1>> &v) {
+    return StdVectorOfEigenVectorToEigenMatrix(v).colwise().mean();
+};
+
+/// \brief: Compute the rotation matrix to align two vectors.
+template <typename T>
+Eigen::Matrix<T, 3, 3> RotationBetweenVectors(Eigen::Matrix<T, 3, 1> u, Eigen::Matrix<T, 3, 1> v) {
+    return Eigen::Quaternion<T>::FromTwoVectors(u, v).toRotationMatrix();
+};
 
 
 
@@ -224,23 +261,41 @@ bool Glob(const std::string &path,
           const std::string &prefix,
           std::vector<std::string> &filenames);
 
+template <typename T>
+T BilinearSample(const cv::Mat &img, const Eigen::Matrix<float, 2, 1> &xy) {
+    int col{xy(0)};
+    int row{xy(1)};
+    T v1 = (row+1-xy(1)) * (col+1-xy(0)) * img.at<T>(row, col);
+    T v2 = (xy(1)-row) * (col+1-xy(0)) * img.at<T>(row+1, col);
+    T v3 = (xy(1)-row) * (xy(0)-col) * img.at<T>(row+1, col+1);
+    T v4 = (row+1-xy(1)) * (xy(0)-col) * img.at<T>(row, col+1);
+    return v1 + v2 + v3 + v4;
+}
 
-namespace io {
-
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// I/O UTILITIES
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 class MeshIO : public std::exception {
     virtual const char* what() const throw() {
         return "Mesh IO Exception";
     }
 };
+
 /// \brief: Load vertices and faces from an .obj file.
 /// \param obj_file: The .obj file.
 /// \param vertices: Vertices of the mesh.
 /// \param faces: Faces of the mesh.
-bool LoadMeshFromObjFile(const std::string &obj_file, std::vector<float> &vertices, std::vector<int> &faces);
-std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromObjFile(const std::string &obj_file);
+std::tuple<MatXf, MatXi> LoadMesh(const std::string &file);
+bool LoadMesh(const std::string &file, MatXf &V, MatXi &F);
 
-bool LoadMeshFromPlyFile(const std::string &obj_file, std::vector<float> &vertices, std::vector<int> &faces);
-std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromPlyFile(const std::string &obj_file);
+// bool LoadMeshFromObjFile(const std::string &obj_file, std::vector<float> &vertices, std::vector<int> &faces);
+// std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromObjFile(const std::string &obj_file);
+// bool LoadMeshFromPlyFile(const std::string &obj_file, std::vector<float> &vertices, std::vector<int> &faces);
+// std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromPlyFile(const std::string &obj_file);
 
 /// \brief: Load edgemap from protobuf file.
 bool LoadEdgeMap(const std::string &filename, cv::Mat &edge);
@@ -253,34 +308,49 @@ std::vector<std::string> LoadMeshDatabase(const std::string &root, const std::st
 Mat4f SE3FromArray(float *data);
 Mat4f SE3FromArray(double *data);
 
-/// \brief load NxM double matrix from json file
-template<typename T=FloatType, int N=3, int M = N>
-Eigen::Matrix<T, N, M> GetMatrixFromDynamic(
-    const folly::dynamic &v,
-    const std::string &key) {
+enum class JsonMatLayout {
+    OneDim,
+    RowMajor,
+    ColMajor
+};
+/// \brief load NxM double matrix from json file.
+/// \param v: json record
+/// \param key: the key
+/// \param layout: Whether the matrix is arranged as an one-dim array or two-dim matrix.
+template<typename T=ftype, int N=3, int M = N>
+Eigen::Matrix<T, N, M> GetMatrixFromJson(
+    const Json::Value &v,
+    const std::string &key,
+    JsonMatLayout layout=JsonMatLayout::OneDim) {
 
     Eigen::Matrix<T, N, M> ret;
     for (int i = 0; i < N; ++i)
         for (int j = 0; j < M; ++j)
-            ret(i, j) = v[key][i * M + j].asDouble();
+            if (layout == JsonMatLayout::OneDim) {
+                ret(i, j) = v[key][i * M + j].asDouble();
+            } else if (layout == JsonMatLayout::RowMajor) {
+                ret(i, j) = v[key][i][j].asDouble();
+            } else {
+                ret(i, j) = v[key][j][i].asDouble();
+            }
     return ret;
 }
 
 /// \brief load N-dim double vector from json file
-template<typename T=FloatType, int N>
-Eigen::Matrix<T, N, 1> GetVectorFromDynamic(
-    const folly::dynamic &v,
+template<typename T=ftype, int N>
+Eigen::Matrix<T, N, 1> GetVectorFromJson(
+    const Json::Value &v,
     const std::string &key) {
 
-    return GetMatrixFromDynamic<T, N, 1>(v, key);
+    return GetMatrixFromJson<T, N, 1>(v, key);
 };
 
 template<typename Derived>
-void WriteMatrixToDynamic(folly::dynamic &d, const std::string &key, const Eigen::MatrixBase<Derived> &m) {
-    d[key] = folly::dynamic::array();
+void WriteMatrixToJson(Json::Value &d, const std::string &key, const Eigen::MatrixBase<Derived> &m) {
+    // d[key] = Json::Value;
     for (int i = 0; i < m.rows(); ++i)
         for (int j = 0; j < m.cols(); ++j)
-            d[key].push_back(m(i, j));
+            d[key].append(m(i, j));
 }
 
 /// \brief: Save opencv mat to file in txt or binary form (if the flag binary is turned on).
@@ -299,9 +369,8 @@ void SaveMatToFile(const std::string &filename, const cv::Mat &mat, bool binary=
 }
 
 /// \brief: Merge two dynamic objects and return the merged one.
-folly::dynamic MergeDynamic(const folly::dynamic &a, const folly::dynamic &b);
+void MergeJson(Json::Value &a, const Json::Value &b);
+Json::Value LoadJson(const std::string &filename);
 
-
-} // namespace io
 
 }

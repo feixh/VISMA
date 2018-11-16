@@ -2,26 +2,22 @@
 // Created by feixh on 10/25/17.
 //
 #include "utils.h"
-
-// system
+// unix
 #include "dirent.h"
-
 // stl
 #include <iostream>
-#include <tuple>
 
-// thirdparty
+// I/O
 #include "igl/readOBJ.h"
 #include "igl/readPLY.h"
-#include "folly/json.h"
-#include "folly/FileUtil.h"
-#include "folly/Format.h"
+#include "json/json.h"
+#include "absl/strings/str_format.h"
 
-// protocol buffer
 #include "vlslam.pb.h"
 
 namespace feh {
 
+#ifdef FEH_CORE_USE_COLOR_INFO
 const std::string TermColor::red     = "\033[91m";
 const std::string TermColor::green   = "\033[92m";
 const std::string TermColor::blue    = "\033[94m";
@@ -33,6 +29,18 @@ const std::string TermColor::white   = "\033[97m";
 const std::string TermColor::bold    = "\033[1m";
 const std::string TermColor::end     = "\033[0m";
 const std::string TermColor::endl     = "\033[0m\n";
+#else
+const std::string TermColor::red     = "";
+const std::string TermColor::green   = "";
+const std::string TermColor::blue    = "";
+const std::string TermColor::cyan    = "";
+const std::string TermColor::yellow  = "";
+const std::string TermColor::magenta = "";
+const std::string TermColor::gray    = "";
+const std::string TermColor::white   = "";
+const std::string TermColor::bold    = "";
+const std::string TermColor::end     = "";
+#endif
 
 
 std::ostream& operator<<(std::ostream& os, const Timer& obj)
@@ -119,61 +127,30 @@ bool Glob(const std::string &directory,
     }
 }
 
-namespace io {
-
-bool LoadMeshFromObjFile(const std::string &obj_file,
-                         std::vector<float> &vertices,
-                         std::vector<int> &faces) {
-    Eigen::MatrixXf V;
-    Eigen::MatrixXi F;
-    bool success = igl::readOBJ(obj_file, V, F);
-    if (success) {
-        vertices.reserve(V.rows() * 3);
-        for (int i = 0; i < V.rows(); ++i) {
-            vertices.insert(vertices.end(), {V(i, 0), V(i, 1), V(i, 2)});
-        }
-        faces.reserve(F.rows() * 3);
-        for (int i = 0; i < F.rows(); ++i) {
-            faces.insert(faces.end(), {F(i, 0), F(i, 1), F(i, 2)});
-        }
+std::tuple<MatXf, MatXi> LoadMesh(const std::string &file) {
+    MatXf V;
+    MatXi F;
+    if (!LoadMesh(file, V, F)) {
+        throw MeshIO();
+    } else {
+        return std::make_tuple(V, F);
     }
+}
+
+
+bool LoadMesh(const std::string &file, MatXf &V, MatXi &F) {
+    bool success = false;
+    if (file.find(".obj") != std::string::npos) {
+        success = igl::readOBJ(file, V, F);
+    } else if (file.find(".ply") != std::string::npos) {
+        success = igl::readPLY(file, V, F);
+    }
+    V = V.leftCols(3);
+    F = F.leftCols(3);
     return success;
 }
 
-std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromObjFile(const std::string &obj_file) {
-    std::vector<float> vertices;
-    std::vector<int> faces;
-    if (LoadMeshFromObjFile(obj_file, vertices, faces)) {
-        return std::make_tuple(vertices, faces);
-    } else throw MeshIO();
-};
 
-bool LoadMeshFromPlyFile(const std::string &ply_file,
-                         std::vector<float> &vertices,
-                         std::vector<int> &faces) {
-    Eigen::MatrixXf V;
-    Eigen::MatrixXi F;
-    bool success = igl::readPLY(ply_file, V, F);
-    if (success) {
-        vertices.reserve(V.rows() * 3);
-        for (int i = 0; i < V.rows(); ++i) {
-            vertices.insert(vertices.end(), {V(i, 0), V(i, 1), V(i, 2)});
-        }
-        faces.reserve(F.rows() * 3);
-        for (int i = 0; i < F.rows(); ++i) {
-            faces.insert(faces.end(), {F(i, 0), F(i, 1), F(i, 2)});
-        }
-    }
-    return success;
-}
-
-std::tuple<std::vector<float>, std::vector<int>> LoadMeshFromPlyFile(const std::string &ply_file) {
-    std::vector<float> vertices;
-    std::vector<int> faces;
-    if (LoadMeshFromPlyFile(ply_file, vertices, faces)) {
-        return std::make_tuple(vertices, faces);
-    } else throw MeshIO();
-};
 
 
 
@@ -197,9 +174,9 @@ bool LoadEdgeMap(const std::string &filename, cv::Mat &edge) {
 std::vector<std::string> LoadMeshDatabase(const std::string &root, const std::string &cat_json) {
     CHECK_STREQ(cat_json.substr(cat_json.find('.'), 5).c_str(), ".json");
     std::string content;
-    std::string full_path = folly::sformat("{}/{}", root, cat_json);
-    folly::readFile(full_path.c_str(), content);
-    folly::dynamic json_content = folly::parseJson(folly::json::stripComments(content));
+    std::string full_path = absl::StrFormat("%d/%d", root, cat_json);
+    auto json_content = LoadJson(full_path);
+
     std::vector<std::string> out;
     for (const auto &value : json_content["entries"]) {
         out.push_back(value.asString());
@@ -221,19 +198,25 @@ Mat4f SE3FromArray(double *data) {
     return out.cast<float>();
 }
 
-folly::dynamic MergeDynamic(const folly::dynamic &a, const folly::dynamic &b) {
-    if (b == nullptr) return a;
-    folly::dynamic out(a);
-    for (auto &item : b.items()) {
-        if (out.find(item.first) != out.items().end()) {
-            std::cout << TermColor::yellow << "WARNING: KEY " << item.first << " EXISTS" << TermColor::endl;
-        }
-        out[item.first] = item.second;
-    }
-    return out;
+void MergeJson(Json::Value &a, const Json::Value &b) {
+  if (!a.isObject() || !b.isObject()) return;
+  for (const auto &key : b.getMemberNames()) 
+    if (a[key].isObject()) 
+      MergeJson(a[key], b[key]); 
+    else 
+      a[key] = b[key];
 }
 
-}   // namespace io
+Json::Value LoadJson(const std::string &filename) {
+    std::ifstream in(filename, std::ios::in);
+    if (in.is_open()) {
+        Json::Value out;
+        in >> out;
+        return out;
+    } else {
+        throw std::runtime_error(absl::StrFormat("failed to read file %s", filename));
+    }
+}
 
 }   // namespace feh
 
