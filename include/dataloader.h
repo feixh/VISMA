@@ -7,8 +7,8 @@
 
 // 3rd party
 #include "sophus/se3.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/videoio.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/video/video.hpp"
 
 // own
 #include "vlslam.pb.h"

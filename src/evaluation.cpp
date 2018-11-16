@@ -136,7 +136,7 @@ void MeshAlignment(const folly::dynamic &config) {
         std::string key = key_obj.asString();
         auto &this_model = models[counter];
 
-        this_model.model_to_scene_.block<3, 4>(0, 0) = io::GetMatrixFromDynamic<double, 3, 4>(gt_json, key);
+        this_model.model_to_scene_.block<3, 4>(0, 0) = GetMatrixFromJson<double, 3, 4>(gt_json, key);
         this_model.model_name_ = key.substr(0, key.find_last_of('_'));
         std::cout << "reading ... " << folly::sformat("{}/{}.obj", database_dir, this_model.model_name_);
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
@@ -175,7 +175,7 @@ void MeshAlignment(const folly::dynamic &config) {
     auto scene_est = std::make_shared<open3d::PointCloud>();
     std::unordered_map<int, Model> models_est;
     for (const auto &obj : packet) {
-        auto pose = io::GetMatrixFromDynamic<double, 3, 4>(obj, "model_pose");
+        auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
         std::cout << folly::format("id={}\nstatus={}\nshape={}\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
@@ -224,7 +224,7 @@ void MeshAlignment(const folly::dynamic &config) {
     }
     // save the alignment
     folly::dynamic out = folly::dynamic::object();
-    io::WriteMatrixToDynamic(out, "T_ef_corvis", T_ef_corvis.block<3, 4>(0, 0));
+    WriteMatrixToJson(out, "T_ef_corvis", T_ef_corvis.block<3, 4>(0, 0));
     std::string output_path = scene_dir + "/result_alignment.json";
     folly::writeFile(folly::toPrettyJson(out), output_path.c_str());
     std::cout << "T_ef_corvis written to " << output_path << "\n";

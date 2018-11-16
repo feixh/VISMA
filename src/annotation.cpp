@@ -152,7 +152,7 @@ void AnnotationTool(const folly::dynamic &config) {
         Ttot = Ttot * T3 * T2;
 
         // SAVE TOTAL TRANSFORMATION TO JSON FILE
-        io::WriteMatrixToDynamic(out_json, scan_name, Ttot.block<3, 4>(0, 0));
+        WriteMatrixToJson(out_json, scan_name, Ttot.block<3, 4>(0, 0));
 
 
         // CHECK THE TOTAL TRANSFORMATION

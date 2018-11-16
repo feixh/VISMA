@@ -7,7 +7,7 @@
 
 // own
 #include "utils.h"
-#include "opencv2/imgproc.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 namespace feh {
 
@@ -21,7 +21,7 @@ dataroot_(dataroot) {
     dataset_.ParseFromIstream(&in_file);
     in_file.close();
 
-    if (!feh::Glob(dataroot_, ".png", png_files_)) {
+    if (!Glob(dataroot_, ".png", png_files_)) {
         LOG(FATAL) << "FATAL::failed to read png file list @" << dataroot_;
     }
 
@@ -30,11 +30,11 @@ dataroot_(dataroot) {
 //    }
 
 
-    if (!feh::Glob(dataroot_, ".edge", edge_files_)) {
+    if (!Glob(dataroot_, ".edge", edge_files_)) {
         LOG(FATAL) << "FATAL::failed to read edge map list @" << dataroot_;
     }
 
-    if (!feh::Glob(dataroot_, ".bbox", bbox_files_)) {
+    if (!Glob(dataroot_, ".bbox", bbox_files_)) {
         LOG(FATAL) << "FATAL::failed to read bounding box lisst @" << dataroot_;
     }
 
@@ -66,10 +66,10 @@ bool VlslamDatasetLoader::Grab(int i,
     std::cout << i << "\n";
 
     vlslam_pb::Packet *packet_ptr(dataset_.mutable_packets(i));
-    gwc = Sophus::SE3f(feh::io::SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    gwc = Sophus::SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
 
     // gravity alignment rotation
-    feh::Vec3f Wg(packet_ptr->wg(0), packet_ptr->wg(1), 0);
+    Vec3f Wg(packet_ptr->wg(0), packet_ptr->wg(1), 0);
     Rg = Sophus::SO3f::exp(Wg);
 
     // read image
@@ -80,7 +80,7 @@ bool VlslamDatasetLoader::Grab(int i,
     // read edge map if have any
     if (i < edge_files_.size()) {
         std::string edge_file = edge_files_[i];
-        if (!feh::io::LoadEdgeMap(edge_file, edgemap)) {
+        if (!LoadEdgeMap(edge_file, edgemap)) {
             LOG(FATAL) << "failed to load edge map @ " << edge_file;
         }
     }
@@ -132,7 +132,7 @@ std::unordered_map<int64_t, std::array<ftype, 3>> VlslamDatasetLoader::GrabSpars
     vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
 
 
-    auto gwc = Sophus::SE3f(feh::io::SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    auto gwc = Sophus::SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
     auto gcw = gwc.inverse();
 
 

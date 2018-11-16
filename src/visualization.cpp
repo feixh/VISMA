@@ -130,7 +130,7 @@ void AssembleResult(const folly::dynamic &config,
     try {
         folly::readFile(result_alignment_file.c_str(), contents);
         folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
-        T_ef_corvis = io::GetMatrixFromDynamic<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
+        T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
     } catch (...) {
         std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;
         T_ef_corvis.block<3, 3>(0, 0).setIdentity();
@@ -148,7 +148,7 @@ void AssembleResult(const folly::dynamic &config,
     auto packet = result.at(result_index);
     std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> objects;
     for (const auto &obj : packet) {
-        auto pose = io::GetMatrixFromDynamic<double, 3, 4>(obj, "model_pose");
+        auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
         std::cout << folly::format("id={}\nstatus={}\nshape={}\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
@@ -199,7 +199,7 @@ void AssembleGroundTruth(const folly::dynamic &config,
     for (const auto &obj : alignment.keys()) {
         std::string obj_name = obj.asString();
         std::string model_name = obj_name.substr(0, obj_name.find_last_of('_'));
-        auto pose = io::GetMatrixFromDynamic<double, 3, 4>(alignment, obj_name);
+        auto pose = GetMatrixFromJson<double, 3, 4>(alignment, obj_name);
         std::cout << obj_name << "\n" << model_name << "\n" << pose << "\n";
         objects.push_back(std::make_pair(model_name, pose));
     }
@@ -247,7 +247,7 @@ void VisualizeResult(const folly::dynamic &config) {
         try {
             folly::readFile(result_alignment_file.c_str(), contents);
             folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
-            T_ef_corvis = io::GetMatrixFromDynamic<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
+            T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
         } catch (...) {
             std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;
             T_ef_corvis.block<3, 3>(0, 0).setIdentity();
@@ -263,7 +263,7 @@ void VisualizeResult(const folly::dynamic &config) {
         std::vector<Eigen::Matrix<double, 6, 1>> vtraj;
         for (int i = 0; i < dataset.packets_size(); ++i) {
             auto packet = dataset.mutable_packets(i);
-            const auto gwc = Sophus::SE3f(io::SE3FromArray(packet->mutable_gwc()->mutable_data()));
+            const auto gwc = Sophus::SE3f(SE3FromArray(packet->mutable_gwc()->mutable_data()));
             auto Twc = T_ef_corvis.block<3, 3>(0, 0) * gwc.translation().cast<double>() + T_ef_corvis.block<3, 1>(0, 3);
             vtraj.push_back({});
             vtraj.back() << Twc(0), Twc(1), Twc(2), 1.0, 0.5, 0.0;
@@ -278,7 +278,7 @@ void VisualizeResult(const folly::dynamic &config) {
         try {
             folly::readFile(result_alignment_file.c_str(), contents);
             folly::dynamic result_alignment = folly::parseJson(folly::json::stripComments(contents));
-            T_ef_corvis = io::GetMatrixFromDynamic<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
+            T_ef_corvis = GetMatrixFromJson<double, 3, 4>(result_alignment, "T_ef_corvis").block<3, 4>(0, 0);
         } catch (...) {
             std::cout << TermColor::bold + TermColor::red << "failed to load result alignment; use identity transformation!!!" << TermColor::endl;
             T_ef_corvis.block<3, 3>(0, 0).setIdentity();

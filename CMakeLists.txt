@@ -3,7 +3,7 @@ project(VISMA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable -Wno-narrowing")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
 
@@ -19,19 +19,20 @@ find_package(Glog REQUIRED)
 # Protobuf
 find_package(Protobuf REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROJECT_SOURCE_DIR}/protocols/vlslam.proto)
-# facebook folly
-find_package(Folly REQUIRED)
+
+add_subdirectory(thirdparty/abseil-cpp)
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/thirdparty/Sophus/include
         ${PROJECT_SOURCE_DIR}/thirdparty/libigl/include
+        ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/include
+        ${PROJECT_SOURCE_DIR}/thirdparty/abseil-cpp
 
         ${OpenCV_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
         ${PROTOBUF_INCLUDE_DIRS}
-        ${FOLLY_INCLUDE_DIR}
         ${GLOG_INCLUDE_DIRS}
 )
 message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
@@ -48,15 +49,13 @@ set(OpenCV_MINIMAL
         opencv_core
         opencv_imgcodecs
         opencv_imgproc
-        opencv_videoio
+        opencv_video
         opencv_calib3d)
 
 
 link_libraries(
         protobuf
         ${OpenCV_MINIMAL}
-        ${FOLLY_LIBRARY}
-        double-conversion   # for folly
         glog
 )
 
@@ -65,6 +64,9 @@ add_library(visma SHARED
         src/utils.cpp
         src/undistorter.cpp
         ${PROTO_SRCS})
+target_link_libraries(visma absl::strings)
+
+
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma)
 
