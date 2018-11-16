@@ -9,14 +9,20 @@ In the follow-up ECCV 2017 paper, the system has been further improved to model 
 If you find VISMA or this repo useful and use them in your work, please cite the following papers:
 
 - Visual-Inertial Object Detection and Mapping.
-    Xiaohan Fei, Stefano Soatto 
+
+    Xiaohan Fei, Stefano Soatto.
+
     In *Proceedings of European Conference on Computer Vision*, 2018.
+
     \[[paper][eccv18_paper]\]-\[[poster][eccv18_poster]\]-\[[video][eccv18_video]\]
 
 
 - Visual-Inertial-Semantic Scene Representation for 3D Object Detection.
+
     Jingming Dong\*, Xiaohan Fei\*, Stefano Soatto.
+
     In *Proceedings of Computer Vision and Pattern Recognition*, 2017.
+
     \[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
 
 <!-- ECCV18 -->
