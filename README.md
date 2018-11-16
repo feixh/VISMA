@@ -2,6 +2,10 @@
 
 VISMA stands for Visual Inertial Semantic Mapping and contains both RGB videos and inertial measurements for developing object-level (semantic) mapping systems.
 
+## Data
+
+Data can be downloaded from [here](https://www.dropbox.com/sh/fr9zt7r2nb3r9ll/AADQExSkZsykwk6i08gmUmOsa?dl=0).
+
 ## Install
 
 Requirements
@@ -55,9 +59,6 @@ Folder `RGBD` contains all the data needed to evaluate semantic reconstruction f
 - `alignment.json` contains the ground truth object pose in the scene. The poses are found by orientation constrained ICP described in our paper.
 - `augmented_scene.ply` contains RGB-D point cloud with points sampled from the CAD models aligned to the scene. This is a point cloud file since RGB-D reconstruction is in the form of point cloud though the CAD models are provided as meshes.
 
-
-
-
 ## Examples
 
 ### Data loading
@@ -79,7 +80,3 @@ To evaluate the semantic reconstruction, we first align the semantic reconstruct
 - `surface_error.json`
 - `rotation_error.json`
 - `translation_error.json`
-
-
-
-
