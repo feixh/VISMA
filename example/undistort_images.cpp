@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iostream>
 
 // 3rd party
 #include "glog/logging.h"

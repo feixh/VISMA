@@ -12,7 +12,7 @@
 #include "IO/IO.h"
 #include "Visualization/Visualization.h"
 // OpenCV
-#include "opencv2/opencv.hpp"
+#include "opencv2/core/core.hpp"
 
 // feh
 #include "utils.h"

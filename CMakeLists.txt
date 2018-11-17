@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(VISMA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable -Wno-narrowing")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
@@ -10,8 +10,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
 # MACROS eigen
 add_definitions(-DEIGEN_INITIALIZE_MATRICES_BY_ZERO)
 
-# OpenCV
-find_package(OpenCV REQUIRED)
 # Eigen
 find_package(Eigen3 REQUIRED)
 # Google log
@@ -41,6 +39,7 @@ link_directories(
         ${PROJECT_SOURCE_DIR}/jsoncpp/lib
         /usr/local/lib
         /usr/lib
+        /usr/x86_64-linux-gnu
 )
 
 
@@ -88,6 +87,7 @@ if (${build_evaluation})
             src/constrained_ICP.cpp
             src/evaluation.cpp
             src/visualization.cpp)
+          target_link_libraries(visma_eval ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/lib/libjsoncpp.so)
 
     add_executable(example_evaluate example/example_evaluate.cpp)
     target_link_libraries(example_evaluate visma_eval visma core Open3D)
