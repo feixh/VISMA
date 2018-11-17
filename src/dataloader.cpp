@@ -8,7 +8,60 @@
 #include "utils.h"
 
 namespace feh {
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// HELPERS
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+Mat4f SE3FromArray(float *data) {
+    Mat4f out;
+    out.block<3, 4>(0, 0) = Eigen::Map<Eigen::Matrix<float, 3, 4, Eigen::RowMajor>>(data);
+    out(3, 3) = 1.0f;
+    return out;
+}
 
+Mat4f SE3FromArray(double *data) {
+    Mat4d out;
+    out.block<3, 4>(0, 0) = Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>>(data);
+    out(3, 3) = 1.0f;
+    return out.cast<float>();
+}
+
+bool LoadEdgeMap(const std::string &filename, cv::Mat &edge) {
+    vlslam_pb::EdgeMap edgemap;
+    try {
+        std::ifstream in_file(filename);
+        edgemap.ParseFromIstream(&in_file);
+        in_file.close();
+        edge = cv::Mat(edgemap.rows(), edgemap.cols(),
+                       CV_32FC1,
+                       edgemap.mutable_data()->mutable_data());
+        edge.convertTo(edge, CV_8UC1, 255.0f);
+        return true;
+    } catch (const std::exception &e) {
+        return false;
+    }
+}
+
+
+std::vector<std::string> LoadMeshDatabase(const std::string &root, const std::string &cat_json) {
+    CHECK_STREQ(cat_json.substr(cat_json.find('.'), 5).c_str(), ".json");
+    std::string content;
+    std::string full_path = absl::StrFormat("%d/%d", root, cat_json);
+    auto json_content = LoadJson(full_path);
+
+    std::vector<std::string> out;
+    for (const auto &value : json_content["entries"]) {
+        out.push_back(value.asString());
+    }
+    return out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// HELPERS
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 VlslamDatasetLoader::VlslamDatasetLoader(const std::string &dataroot):
 dataroot_(dataroot) {

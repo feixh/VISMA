@@ -25,6 +25,7 @@ add_subdirectory(thirdparty/jsoncpp)
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}/core
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/thirdparty/libigl/include
         ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/include
@@ -54,24 +55,26 @@ link_libraries(
         opencv_core
         opencv_imgproc
         opencv_video
-        opencv_calib3d
-)
+        opencv_calib3d)
+
+add_library(core SHARED
+        core/utils.cpp
+        ${PROTO_SRCS})
 
 add_library(visma SHARED
         src/dataloader.cpp
-        src/utils.cpp
         src/undistorter.cpp
         ${PROTO_SRCS})
 
 
 add_executable(example_load example/example_load.cpp)
-target_link_libraries(example_load visma)
+target_link_libraries(example_load visma core)
 
 add_executable(example_dump example/example_dump.cpp)
-target_link_libraries(example_dump visma)
+target_link_libraries(example_dump visma core)
 
 add_executable(undistort_images example/undistort_images.cpp)
-target_link_libraries(undistort_images visma)
+target_link_libraries(undistort_images visma core)
 
 
 set(build_evaluation True)
@@ -87,6 +90,6 @@ if (${build_evaluation})
             src/visualization.cpp)
 
     add_executable(example_evaluate example/example_evaluate.cpp)
-    target_link_libraries(example_evaluate visma_eval visma Open3D)
+    target_link_libraries(example_evaluate visma_eval visma core Open3D)
 endif(${build_evaluation})
 
