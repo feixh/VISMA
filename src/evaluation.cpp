@@ -14,8 +14,6 @@
 
 namespace feh {
 
-
-
 void FindCorrespondence(const std::unordered_map<int, Model> &tgt,
                         const std::unordered_map<int, Model> &src,
                         const Eigen::Matrix<double, 4, 4> &T_tgt_src,
@@ -46,6 +44,7 @@ Eigen::Matrix4d OptimizeAlignment(
     const std::unordered_map<int, Model> &tgt,
     const std::unordered_map<int, Model> &src,
     const open3d::CorrespondenceSet &matches) {
+  throw;
   // Need to implement log & exp map of SE(3) first
   /*
     std::vector<double> w(matches.size(), 1.0 / matches.size());
@@ -136,9 +135,9 @@ void MeshAlignment(const Json::Value &config) {
 
         this_model.model_to_scene_.block<3, 4>(0, 0) = GetMatrixFromJson<double, 3, 4>(gt_json, key);
         this_model.model_name_ = key.substr(0, key.find_last_of('_'));
-        std::cout << absl::StrFormat("reading ... %s/%s.obj", database_dir, this_model.model_name_);
+        std::cout << StrFormat("reading ... %s/%s.obj", database_dir, this_model.model_name_);
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(absl::StrFormat("%s/%s.obj", database_dir, this_model.model_name_), tmp, this_model.F_);
+        igl::readOBJ(StrFormat("%s/%s.obj", database_dir, this_model.model_name_), tmp, this_model.F_);
         this_model.V_ = tmp.leftCols(3);
 
         std::shared_ptr <open3d::PointCloud> model_pc = std::make_shared<open3d::PointCloud>();
@@ -162,7 +161,7 @@ void MeshAlignment(const Json::Value &config) {
     }
 
     // LOAD RESULT FILE
-    std::string result_file = absl::StrFormat("%s/result.json", scene_dir);
+    std::string result_file = StrFormat("%s/result.json", scene_dir);
     std::cout << "result file=" << result_file << "\n";
     auto result = LoadJson(result_file);
     // ITERATE AND GET THE LAST ONE
@@ -171,7 +170,7 @@ void MeshAlignment(const Json::Value &config) {
     std::unordered_map<int, Model> models_est;
     for (const auto &obj : packet) {
         auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
-        std::cout << absl::StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
+        std::cout << StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
                                    obj["model_name"].asString())
@@ -181,7 +180,7 @@ void MeshAlignment(const Json::Value &config) {
         this_model.model_name_ = obj["model_name"].asString();
         this_model.model_to_scene_.block<3, 4>(0, 0) = pose;
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(absl::StrFormat("%s/%s.obj",
+        igl::readOBJ(StrFormat("%s/%s.obj",
                                     database_dir,
                                     this_model.model_name_),
                      tmp, this_model.F_);
@@ -203,7 +202,7 @@ void MeshAlignment(const Json::Value &config) {
     auto T_ef_corvis = ret.transformation_;
     std::cout << "T_ef_corvis=\n" << T_ef_corvis << "\n";
     for (int i = 0; i < ret.correspondence_set_.size(); ++i) {
-        std::cout << absl::StrFormat("%d-%d\n", ret.correspondence_set_[i][0], ret.correspondence_set_[i][1]);
+        std::cout << StrFormat("%d-%d\n", ret.correspondence_set_[i][0], ret.correspondence_set_[i][1]);
     }
 
     if (config["evaluation"]["ICP_refinement"].asBool()) {
@@ -270,7 +269,7 @@ open3d::RegistrationResult ICPRefinement(std::shared_ptr<open3d::PointCloud> sce
                                         options.get("max_distance", 0.05).asDouble(),
                                         T_scene_src);
     }
-    std::cout << absl::StrFormat("fitness=%f; inlier_rmse=%f\n", result.fitness_, result.inlier_rmse_);
+    std::cout << StrFormat("fitness=%f; inlier_rmse=%f\n", result.fitness_, result.inlier_rmse_);
     return result;
 }
 
@@ -347,17 +346,17 @@ void QuantitativeEvaluation(Json::Value config) {
     };
 
     // write out result
-    std::string error_filename = absl::StrFormat("%s/%s/surface_error.json",
+    std::string error_filename = StrFormat("%s/%s/surface_error.json",
                                                 config["dataroot"].asString(),
                                                 config["dataset"].asString());
     save_metric(error_filename, stats);
 
-    error_filename = absl::StrFormat("%s/%s/translation_error.json",
+    error_filename = StrFormat("%s/%s/translation_error.json",
                                     config["dataroot"].asString(),
                                     config["dataset"].asString());
     save_metric(error_filename, pose_stats[0]);
 
-    error_filename = absl::StrFormat("%s/%s/rotation_error.json",
+    error_filename = StrFormat("%s/%s/rotation_error.json",
                                     config["dataroot"].asString(),
                                     config["dataset"].asString());
     save_metric(error_filename, pose_stats[1]);

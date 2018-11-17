@@ -61,7 +61,7 @@ void AssembleScene(const Json::Value &config,
         Eigen::Matrix<double, Eigen::Dynamic, 3> v;
         Eigen::Matrix<int, Eigen::Dynamic, 3> f;
         Eigen::Matrix<double, Eigen::Dynamic, 6> tmp;
-        igl::readOBJ(absl::StrFormat("%s/%s.obj", database_dir, model_name), tmp, f);
+        igl::readOBJ(StrFormat("%s/%s.obj", database_dir, model_name), tmp, f);
         v = tmp.leftCols(3);
         std::cout << "v.size=" << v.rows() << "x" << v.cols() << "\n";
         // TRANSFORM TO SCENE FRAME
@@ -143,7 +143,7 @@ void AssembleResult(const Json::Value &config,
     std::list<std::pair<std::string, Eigen::Matrix<double, 3, 4>>> objects;
     for (const auto &obj : packet) {
         auto pose = GetMatrixFromJson<double, 3, 4>(obj, "model_pose");
-        std::cout << absl::StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
+        std::cout << StrFormat("id=%d\nstatus=%d\nshape=%s\npose=\n",
                                    obj["id"].asInt(),
                                    obj["status"].asInt(),
                                    obj["model_name"].asString())
@@ -229,7 +229,7 @@ void VisualizeResult(const Json::Value &config) {
     AssembleResult(config, &V, &F);
 
     std::string dataset_path = config["experiment_root"].asString() + "/" + config["dataset"].asString();
-    std::string scene_dir = absl::StrFormat("%s/%s/", 
+    std::string scene_dir = StrFormat("%s/%s/", 
         config["dataroot"].asString(), config["dataset"].asString());
 
     Eigen::Matrix<double, Eigen::Dynamic, 6> traj, pts;

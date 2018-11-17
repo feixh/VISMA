@@ -47,7 +47,7 @@ bool LoadEdgeMap(const std::string &filename, cv::Mat &edge) {
 std::vector<std::string> LoadMeshDatabase(const std::string &root, const std::string &cat_json) {
     CHECK_STREQ(cat_json.substr(cat_json.find('.'), 5).c_str(), ".json");
     std::string content;
-    std::string full_path = absl::StrFormat("%d/%d", root, cat_json);
+    std::string full_path = StrFormat("%d/%d", root, cat_json);
     auto json_content = LoadJson(full_path);
 
     std::vector<std::string> out;
