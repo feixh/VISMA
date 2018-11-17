@@ -10,8 +10,8 @@ OPTION(JSONCPP_WITH_WARNING_AS_ERROR "Force compilation to fail if a warning occ
 OPTION(JSONCPP_WITH_STRICT_ISO "Issue all the warnings demanded by strict ISO C and ISO C++" ON)
 OPTION(JSONCPP_WITH_PKGCONFIG_SUPPORT "Generate and install .pc files" ON)
 OPTION(JSONCPP_WITH_CMAKE_PACKAGE "Generate and install cmake package files" ON)
-OPTION(BUILD_SHARED_LIBS "Build jsoncpp_lib as a shared library." OFF)
-OPTION(BUILD_STATIC_LIBS "Build jsoncpp_lib static library." ON)
+OPTION(BUILD_SHARED_LIBS "Build jsoncpp_lib as a shared library." ON)
+OPTION(BUILD_STATIC_LIBS "Build jsoncpp_lib static library." OFF)
 
 # Ensures that CMAKE_BUILD_TYPE is visible in cmake-gui on Unix
 IF(NOT WIN32)

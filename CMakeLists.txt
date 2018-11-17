@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(VISMA)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3 -Wall -g -fopenmp")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-function -Wno-unused-variable -Wno-narrowing")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
@@ -21,7 +21,6 @@ find_package(Protobuf REQUIRED)
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${PROJECT_SOURCE_DIR}/protocols/vlslam.proto)
 
 add_subdirectory(thirdparty/abseil-cpp)
-add_subdirectory(thirdparty/jsoncpp)
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
@@ -49,7 +48,6 @@ link_libraries(
         protobuf
         glog
         jsoncpp
-        absl::str_format
 
         opencv_highgui
         opencv_core
@@ -65,6 +63,8 @@ add_library(visma SHARED
         src/dataloader.cpp
         src/undistorter.cpp
         ${PROTO_SRCS})
+
+link_libraries(core visma absl::str_format)
 
 
 add_executable(example_load example/example_load.cpp)
