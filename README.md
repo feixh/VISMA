@@ -106,10 +106,10 @@ VISMA is designed for but not limited to developing visual-inertial semantic SLA
 First go to `protocols` and 
 
 ```
-protoc vlslam.proto --python_out=.
+protoc vlslam.proto --python_out=../scripts
 ```
 
-which generates `vlslam_pb2.py` in protocols folder.
+which generates `vlslam_pb2.py` in scripts folder.
 
 Go to project root directory and run the following
 

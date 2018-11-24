@@ -19,4 +19,4 @@ cd $PROJECT_DIR
 # generate python binding for protobuf
 cd $PROJECT_DIR/protocols
 protoc vlslam.proto --python_out=.
-touch __init__.py
+cp vlslam_pb2.py $PROJECT_DIR/scripts
