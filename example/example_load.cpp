@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
         }
         cv::imshow("image", img);
         cv::imshow("edge map", edgemap);
-        cv::waitKey(30);
+        char ckey = cv::waitKey(30);
+        if (ckey == 'q') break;
     }
 }

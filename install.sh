@@ -15,3 +15,7 @@ cd build
 cmake ..
 make -j
 cd $PROJECT_DIR
+
+# generate python binding for protobuf
+cd $PROJECT_DIR/protocols
+protoc vlslam.proto --python_out=.

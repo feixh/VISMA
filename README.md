@@ -26,8 +26,9 @@ If you find VISMA or this repo useful and use them in your work, please cite the
     \[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
 
 <!-- ECCV18 -->
+
 [eccv18_paper]: http://openaccess.thecvf.com/content_ECCV_2018/papers/Xiaohan_Fei_Visual-Inertial_Object_Detection_ECCV_2018_paper.pdf
-[eccv18_poster]: https://www.dropbox.com/s/n0m5lsgodm99x5q/eccv18_poster.pdf?dl=0 
+[eccv18_poster]: https://www.dropbox.com/s/n0m5lsgodm99x5q/eccv18_poster.pdf?dl=0
 [eccv18_video]: https://youtu.be/TZTriqQm6nU
 
 <!-- CVPR17 -->
@@ -49,8 +50,9 @@ Dependencies
 - `Protobuf`: Utilities for protocol buffer. Install via package manager.
 - `abseil-cpp`: Utilities from google. No need to build this manually, since the repo is `add_subdirectory`-ed into the main build script.
 - `jsoncpp`: I/O for json files. No need to build this manually, since the repo is `add_subdirectory`-ed into the main build script.
+  
     
-    
+
 Once all the requirements are met, make a build directory, enter that directory and `cmake ..` followed by `make`.
 
 To build the evaluation code, you need the following extra dependecies: 
@@ -93,14 +95,35 @@ Folder `RGBD` contains all the data needed to evaluate semantic reconstruction f
 
 ## Examples
 
-### Data loading
+### Data loading (C++)
 
 For example usage of data loader, see `example/example_load.cpp` and run `example_load DATASET_DIRECTORY` in the example sub-directory. The input RGB image, pre-computed edge map and object proposals, camera pose from SLAM will be loaded. To load the sparse reconstruction, 2D tracklets of feature points and other information from SLAM, see the protocol buffer file in `protocols/vlslam.proto` and modify the dataset loader accordingly.
+
+### Data loading (Python)
+
+VISMA is designed for but not limited to developing visual-inertial semantic SLAM. In any case if one wants to use it for training deep neural networks, e.g., [unsupervised depth prediction](https://arxiv.org/abs/1807.11130) learned from monocular videos, we provide an example python script to load and process data. 
+
+First go to `protocols` and 
+
+```
+protoc vlslam.proto --python_out=.
+```
+
+which generates `vlslam_pb2.py` in protocols folder.
+
+Go to project root directory and run the following
+
+```
+python scripts/example_load.py --dataroot YOUR_DIRECTORY_OF_PREPROCESSED_DATA
+```
+
+For more command line options, see the script.
+
 
 
 <!--
 
-### Evaluation
+Evaluation
 
 To evaluate the semantic reconstruction, one needs to provide the following paths in the configuration file `cfg/tool.json`:
 - Path to the CAD database.
