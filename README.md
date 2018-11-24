@@ -121,6 +121,11 @@ For more command line options, see the script.
 
 
 
+## TODO
+
+- Complete python script on loading bounding boxes, sparse features, etc.
+- Finalize example code on evaluation.
+
 <!--
 
 Evaluation
