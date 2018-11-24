@@ -6,6 +6,8 @@ import argparse
 import glob
 
 # protobuf
+import sys
+sys.path.insert(0, '.')
 import protocols.vlslam_pb2 as vlslam_pb2
 
 parser = argparse.ArgumentParser()
