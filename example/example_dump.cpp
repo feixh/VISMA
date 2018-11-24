@@ -1,5 +1,6 @@
 #include <memory>
 #include <fstream>
+#include <iostream>
 
 // unix
 #include "sys/stat.h"

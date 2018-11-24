@@ -1,4 +1,4 @@
-#include "dataloader.h"
+#include <iostream>
 
 // 3rd party
 #include "json/json.h"
@@ -6,26 +6,9 @@
 
 // own
 #include "utils.h"
+#include "dataloader.h"
 
 namespace feh {
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// HELPERS
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-Mat4f SE3FromArray(float *data) {
-    Mat4f out;
-    out.block<3, 4>(0, 0) = Eigen::Map<Eigen::Matrix<float, 3, 4, Eigen::RowMajor>>(data);
-    out(3, 3) = 1.0f;
-    return out;
-}
-
-Mat4f SE3FromArray(double *data) {
-    Mat4d out;
-    out.block<3, 4>(0, 0) = Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>>(data);
-    out(3, 3) = 1.0f;
-    return out.cast<float>();
-}
 
 bool LoadEdgeMap(const std::string &filename, cv::Mat &edge) {
     vlslam_pb::EdgeMap edgemap;
@@ -117,7 +100,9 @@ bool VlslamDatasetLoader::Grab(int i,
     std::cout << i << "\n";
 
     vlslam_pb::Packet *packet_ptr(dataset_.mutable_packets(i));
-    gwc = SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    gwc = SE3::from_matrix3x4(
+          Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>>(
+            packet_ptr->mutable_gwc()->mutable_data()));
 
     // gravity alignment rotation
     Vec3f Wg(packet_ptr->wg(0), packet_ptr->wg(1), 0);
@@ -182,8 +167,9 @@ std::unordered_map<int64_t, std::array<ftype, 3>> VlslamDatasetLoader::GrabSpars
     std::unordered_map<int64_t, std::array<ftype, 3>> out;
     vlslam_pb::Packet *packet_ptr = dataset_.mutable_packets(i);
 
-
-    auto gwc = SE3f(SE3FromArray(packet_ptr->mutable_gwc()->mutable_data()));
+    auto gwc = SE3::from_matrix3x4(
+        Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>>(
+          packet_ptr->mutable_gwc()->mutable_data()));
     auto gcw = gwc.inv();
 
 

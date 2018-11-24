@@ -7,18 +7,18 @@
 
 namespace feh {
 
-template<typename T>
+template<typename Type>
 class SO3Type {
 public:
-    using BaseType = Eigen::Matrix<T, 3, 3>;
-    using PointType = Eigen::Matrix<T, 3, 1>;
+    using BaseType = Eigen::Matrix<Type, 3, 3>;
+    using PointType = Eigen::Matrix<Type, 3, 1>;
     using AxisType = PointType;
 
     SO3Type() : R_{BaseType::Identity()} {}
 
-    SO3Type(const BaseType &R) : R_{R} {}
+    SO3Type(const Eigen::Matrix<Type, 3, 3> &R):R_{R} {}
 
-    SO3Type(const AxisType &axis, T angle) :
+    SO3Type(const AxisType &axis, Type angle) :
             R_{rodrigues(AxisType{axis / axis.norm() * angle})} {}
 
     SO3Type operator*(const SO3Type &other) {
@@ -54,6 +54,19 @@ public:
         return BaseType{svd.matrixU() * BaseType::Identity() * svd.matrixV().transpose()};
     }
 
+    template <typename TT>
+    SO3Type<TT> cast() const {
+      return R_.template cast<TT>();
+    }
+
+    // factory methods
+    template <typename Derived>
+    static SO3Type from_matrix(const Eigen::MatrixBase<Derived> &other) {
+      EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
+      Eigen::Matrix<Type, 3, 3> R = other.template cast<Type>();
+      return R;
+    }
+
 private:
     BaseType R_;
 };
@@ -64,6 +77,12 @@ public:
     using PointType = Eigen::Matrix<Type, 3, 1>;
 
     SE3Type() : R_{}, T_{0, 0, 0} {}
+
+    /*
+    SE3Type(const Eigen::Matrix<Type, 3, 4> &RT):
+            R_{RT.template block<3, 3>(0, 0)},
+            T_{RT.template block<3, 1>(0, 3)} {}
+    */
 
     SE3Type(const Eigen::Matrix<Type, 4, 4> &RT):
             R_{RT.template block<3, 3>(0, 0)},
@@ -110,6 +129,31 @@ public:
         out.template block<3, 4>(0, 0) = matrix3x4();
         return out;
     };
+
+    template <typename TT>
+    SE3Type<TT> cast() {
+      return SE3Type<TT>(R_.cast<TT>(), T_.cast<TT>());
+    }
+
+    // factory methods
+    template <typename Derived>
+    static SE3Type from_matrix3x4(const Eigen::MatrixBase<Derived> &other) {
+      EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 4);
+      Eigen::Matrix<Type, 3, 3> R = other.template block<3, 3>(0, 0).template cast<Type>();
+      Eigen::Matrix<Type, 3, 1> T = other.template block<3, 1>(0, 3).template cast<Type>();
+      return {R, T};
+    }
+
+    template <typename Derived1, typename Derived2>
+    static SE3Type from_RT(const Eigen::MatrixBase<Derived1> &Rin, 
+        const Eigen::MatrixBase<Derived2> &Tin) {
+      EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived1, 3, 3);
+      EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived2, 3, 1);
+
+      Eigen::Matrix<Type, 3, 3> R = Rin.template cast<Type>();
+      Eigen::Matrix<Type, 3, 1> T = Tin.template cast<Type>();
+      return {R, T};
+    }
 
 private:
     SO3Type<Type> R_;

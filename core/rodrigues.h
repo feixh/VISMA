@@ -3,6 +3,7 @@
 #include "math.h"
 
 namespace feh {
+
 template <typename T>
 Eigen::Matrix<T, 3, 3> hat(const Eigen::Matrix<T, 3, 1> &u) {
     return (Eigen::Matrix<T, 3, 3>{} 
@@ -190,3 +191,4 @@ Eigen::Matrix<T, 3, 3> projectSO3(const Eigen::Matrix<T, 3, 3> &R) {
 }
 
 }
+

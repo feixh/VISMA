@@ -36,7 +36,7 @@ message(STATUS "Found Eigen at ${EIGEN3_INCLUDE_DIR}")
 
 link_directories(
         ${PROJECT_SOURCE_DIR}/lib
-        ${PROJECT_SOURCE_DIR}/jsoncpp/lib
+        ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/lib
         /usr/local/lib
         /usr/lib
         /usr/x86_64-linux-gnu
@@ -76,7 +76,7 @@ add_executable(undistort_images example/undistort_images.cpp)
 target_link_libraries(undistort_images visma core)
 
 
-set(build_evaluation True)
+set(build_evaluation False)
 if (${build_evaluation})
     include_directories(
             ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D)
