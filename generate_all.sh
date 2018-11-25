@@ -1,6 +1,6 @@
 #!/bin/sh
 DATAROOT=/local/Data/VISMA_experiments
-OUTPUT=/home/visionlab/Data/VISMA_depth
+OUTPUT=/home/visionlab/Data/VISMA_depth_stride5
 
 python scripts/prepare_data_for_SfMLearner.py --dataroot $DATAROOT/clutter1 --output-dir $OUTPUT/clutter1
 python scripts/prepare_data_for_SfMLearner.py --dataroot $DATAROOT/clutter2 --output-dir $OUTPUT/clutter2

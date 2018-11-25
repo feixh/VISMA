@@ -16,12 +16,14 @@ parser.add_argument('--dataroot',          type=str, required=True,
 parser.add_argument('--output-dir',        type=str, default='tmp')
 parser.add_argument('--ignore-static',     type=int, default=100,
         help='Ignore static frames at the beginning of the sequence')
+parser.add_argument('--stride',            type=int, default=5,
+        help='time stamp between neighboring target and source frames')
 parser.add_argument('--debug',  action='store_true', default=False,
         help='if set, print arrays and show images for inspection')
 
 args = parser.parse_args()
 
-def load_triplet(index, timestamps, dataroot, dataset):
+def load_triplet(index, timestamps, dataroot, dataset, stride=1):
     """
     Given a index, load triple images, with associated camera pose, gravity.
     Args:
@@ -53,7 +55,7 @@ def load_triplet(index, timestamps, dataroot, dataset):
     images = []
     poses = []
     rotations = []
-    for i in [index-1, index, index]:
+    for i in [index-stride, index, index+stride]:
         img, gwc, Rg = load_single_item(i)
         images.append(img)
         poses.append(gwc)
@@ -99,9 +101,9 @@ if __name__ == '__main__':
 
     total = len(timestamps)
     for i in range(args.ignore_static, total):
-        if i > 0 and i+1 < total:
+        if i-args.stride >= 0 and i+args.stride < total:
             print('{:6} - [{:6}, {:6}]'.format(i, args.ignore_static, total))
-            img, gwc, Rg = load_triplet(i, timestamps, args.dataroot, dataset)
+            img, gwc, Rg = load_triplet(i, timestamps, args.dataroot, dataset, args.stride)
             img = resize_and_concat(img)
 
             image_path = os.path.join(args.output_dir, '{:06}.jpg'.format(i))
