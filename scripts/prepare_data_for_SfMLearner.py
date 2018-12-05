@@ -20,10 +20,15 @@ parser.add_argument('--stride',            type=int, default=5,
         help='time stamp between neighboring target and source frames')
 parser.add_argument('--debug',  action='store_true', default=False,
         help='if set, print arrays and show images for inspection')
+parser.add_argument('--process-depth',  action='store_true', default=False,
+        help='if set and depth files exist, process depth maps')
 
 args = parser.parse_args()
 
-def load_triplet(index, timestamps, dataroot, dataset, stride=1):
+# output image size
+OUT_HEIGHT, OUT_WIDTH = 250, 480
+
+def load_items(index, timestamps, dataroot, dataset, stride=1):
     """
     Given a index, load triple images, with associated camera pose, gravity.
     Args:
@@ -33,6 +38,7 @@ def load_triplet(index, timestamps, dataroot, dataset, stride=1):
         dataset: loaded dataset object.
     Returns:
         a list of N images (N=3)
+        depth map if exists
         Nx3x4 numpy array of camera poses
         Nx3x3 numpy array of gravity rotation matrix
     """
@@ -52,6 +58,19 @@ def load_triplet(index, timestamps, dataroot, dataset, stride=1):
         Rg, _ = cv2.Rodrigues(Wg)
         return img, gwc.astype(np.float32), Rg.astype(np.float32)
 
+    def load_depth(i):
+        ts = timestamps[i]
+        # ensure the target image has both proceeding & succeeding source images
+        depth_path= os.path.join(dataroot, '{:}.000000.depth'.format(int(ts)))
+        if os.path.exists(depth_path):
+            with open(depth_path, 'rb') as fid:
+                h = np.frombuffer(fid.read(4), dtype=np.int32)[0]
+                w = np.frombuffer(fid.read(4), dtype=np.int32)[0]
+                depth = np.frombuffer(fid.read(), dtype=np.float32)
+                depth = depth.reshape([h, w])
+                return depth
+        else: return None
+
     images = []
     poses = []
     rotations = []
@@ -60,9 +79,10 @@ def load_triplet(index, timestamps, dataroot, dataset, stride=1):
         images.append(img)
         poses.append(gwc)
         rotations.append(Rg)
-    return images, poses, rotations
+    depth = load_depth(index)
+    return images, depth, poses, rotations
 
-def resize_and_concat(img, shape=(250, 480)):
+def resize_and_concat(img, shape=(OUT_HEIGHT, OUT_WIDTH)):
     """ Resize a list of images and concatenate them in horizontal direction.
     Args:
         img: a list of images
@@ -97,25 +117,31 @@ if __name__ == '__main__':
     plt.ioff()
     plt.close('all')
     fig = plt.figure()
-    img_plot = fig.add_subplot(111)
+    img_plot = fig.add_subplot(211)
+    depth_plot = fig.add_subplot(212)
 
     total = len(timestamps)
     for i in range(args.ignore_static, total):
         if i-args.stride >= 0 and i+args.stride < total:
             print('{:6} - [{:6}, {:6}]'.format(i, args.ignore_static, total))
-            img, gwc, Rg = load_triplet(i, timestamps, args.dataroot, dataset, args.stride)
+            img, depth, gwc, Rg = load_items(i, timestamps, args.dataroot, dataset, args.stride)
             img = resize_and_concat(img)
 
             image_path = os.path.join(args.output_dir, '{:06}.jpg'.format(i))
             pose_path = os.path.join(args.output_dir, '{:06}.pkl'.format(i))
+            depth_path = os.path.join(args.output_dir, '{:06}_depth.npy'.format(i))
 
             cv2.imwrite(image_path, img)
             with open(pose_path, 'wb') as fid:
                 pickle.dump({'gwc': np.array(gwc), 'Rg': np.array(Rg)}, fid)
 
+            if args.process_depth and depth is not None:
+                depth = cv2.resize(depth, (OUT_WIDTH, OUT_HEIGHT), interpolation=cv2.INTER_NEAREST)
+                np.save(depth_path, depth)
 
             if args.debug:
                 print(gwc)
                 print(Rg)
                 img_plot.imshow(img)
+                depth_plot.imshow(depth)
                 plt.show()
