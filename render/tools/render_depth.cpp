@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   float cy = cfg.get("cy", 240).asFloat();
   // init to current camera transformation
   Mat4f g_curr_init = Mat4f::Identity();
+  std::cout << "g_curr_init=" << g_curr_init << std::endl;
   RendererPtr ptr = std::make_shared<Renderer>(imH, imW);
   ptr->SetCamera(z_near, z_far, fx, fy, cx, fy);
   ptr->SetCamera(g_curr_init);
@@ -35,15 +36,28 @@ int main(int argc, char **argv) {
   cv::Mat mask(imH, imW, CV_8UC1);
   SE3f model_pose(SO3f(), GetVectorFromJson<float, 3>(cfg, "translation"));
   std::cout << model_pose.matrix() << std::endl;
+  for (int i = 0; i < V.rows(); ++i) {
+    Vec3f X{model_pose * V.row(i)};
+    Vec2f x{(X(0) * fx + cx) / X(2), (X(1) * fy + cy) / X(2)};
+    // std::cout << "X=" << X.transpose() << std::endl;
+    std::cout << "x=" << x.transpose() << std::endl;
+  }
   // ptr->RenderDepth(model_pose.matrix(), depth_map);
   ptr->RenderMask(model_pose.matrix(), mask);
-  // for (int i = 0; i < imH; ++i)
-  //   for (int j = 0; j < imW; ++j) {
-  //     float z = depth_map.at<float>(i, j);
-  //     depth_map.at<float>(i, j) = LinearizeDepth<float>(z, 0.05, 5);
-  //   }
   // cv::imshow("depth map", depth_map);
   cv::imshow("mask", mask);
   cv::waitKey();
+
+  // TODO: this can be useful for other applications, move to utils?
+  std::ofstream out("depth_map.bin", std::ios::out | std::ios::binary);
+  assert(out.is_open());
+  out.write((char*)&imH, sizeof imH);
+  out.write((char*)&imW, sizeof imW);
+  for (int i = 0; i < imH; ++i)
+    for (int j = 0; j < imW; ++j) {
+      float z = depth_map.at<float>(i, j);
+      out.write((char*)&z, sizeof z);
+    }
+  out.close();
 }
 
