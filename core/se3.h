@@ -23,12 +23,14 @@ public:
     explicit SO3Type(const AxisType &axis, Type angle) :
             R_{rodrigues(AxisType{axis / axis.norm() * angle})} {}
 
-    SO3Type operator*(const SO3Type &other) {
-        return BaseType{R_ * other.matrix()};
+    SO3Type operator*(const SO3Type &other) const {
+        return SO3Type{R_ * other.matrix()};
     }
 
-    PointType operator*(const PointType &v) {
-        return PointType{R_ * v};
+    template <typename Derived>
+    PointType operator*(const Eigen::MatrixBase<Derived> &v) const {
+       // FIXME: check dimension
+       return PointType{R_ * v};
     }
 
     SO3Type inv() const {
@@ -94,11 +96,15 @@ public:
     template <typename Derived>
     explicit SE3Type(const SO3Type<Type> &R, const Eigen::MatrixBase<Derived> &T) : R_{R}, T_{T} {}
 
-    SE3Type operator*(const SE3Type &other) {
-        return {R_ * other.so3(), this->so3() * other.translation() + T_};
+    SE3Type operator*(const SE3Type &other) const {
+        return SE3Type{
+          SO3Type<Type>{R_ * other.so3()}, 
+          this->so3() * other.translation() + T_};
     }
 
-    PointType operator*(const PointType &v) {
+    template <typename Derived>
+    PointType operator*(const Eigen::MatrixBase<Derived> &v) const {
+        // FIXME: check dimension of v
         return R_ * v + T_;
     };
 

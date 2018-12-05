@@ -78,6 +78,9 @@ target_link_libraries(example_dump visma core)
 add_executable(undistort_images example/undistort_images.cpp)
 target_link_libraries(undistort_images visma core)
 
+add_executable(generate_depthmaps example/generate_depthmaps.cpp)
+target_link_libraries(generate_depthmaps visma core)
+
 
 set(build_evaluation False)
 if (${build_evaluation})
