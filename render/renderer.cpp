@@ -273,7 +273,7 @@ void Renderer::SetCamera(float zNear, float zFar, const float *intrinsics) {
     float top = (ccv[1] - (float) (rows_ - 1)) / fcv[1] * zNear;
     glm::mat4 projection = glm::frustum(left, right, bottom, top, zNear, zFar);
 //    projection = glm::scale(projection, glm::vec3(1, -1, 1));
-    std::cout << "projection matrix=\n" << glm::to_string(projection) << "\n";
+//std::cout << "projection matrix=\n" << glm::to_string(projection) << "\n";
 
     if (depth_shader_) {
         depth_shader_->Use();

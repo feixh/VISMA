@@ -3,5 +3,5 @@
   "fy": 400,
   "z_far": 10,
   "mesh": "misc/cube.ply",
-  "translation": [0, 0, 2]
+  "translation": [0, 0, -7]
 }
