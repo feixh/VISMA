@@ -65,6 +65,8 @@ add_library(visma SHARED
 
 link_libraries(core visma absl::str_format)
 
+add_subdirectory(render)
+
 
 add_executable(example_load example/example_load.cpp)
 target_link_libraries(example_load visma core)
