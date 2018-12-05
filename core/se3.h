@@ -14,11 +14,13 @@ public:
     using PointType = Eigen::Matrix<Type, 3, 1>;
     using AxisType = PointType;
 
-    SO3Type() : R_{BaseType::Identity()} {}
+    explicit SO3Type() : R_{BaseType::Identity()} {}
 
-    SO3Type(const Eigen::Matrix<Type, 3, 3> &R):R_{R} {}
+    // explicit SO3Type(const Eigen::Matrix<Type, 3, 3> &R):R_{R} {}
+    template <typename Derived>
+    explicit SO3Type(const Eigen::MatrixBase<Derived> &R):R_{R} {}
 
-    SO3Type(const AxisType &axis, Type angle) :
+    explicit SO3Type(const AxisType &axis, Type angle) :
             R_{rodrigues(AxisType{axis / axis.norm() * angle})} {}
 
     SO3Type operator*(const SO3Type &other) {
@@ -30,7 +32,7 @@ public:
     }
 
     SO3Type inv() const {
-        return BaseType{R_.transpose()};
+        return SO3Type{R_.transpose()};
     }
 
     BaseType matrix() const {
@@ -46,17 +48,17 @@ public:
 //        }
 
     static SO3Type exp(const AxisType &w) {
-        return rodrigues(w);
+        return SO3Type{rodrigues(w)};
     }
 
     static SO3Type fitToSO3(const BaseType &R_approx) {
         Eigen::JacobiSVD<BaseType> svd(R_approx, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        return BaseType{svd.matrixU() * BaseType::Identity() * svd.matrixV().transpose()};
+        return SO3Type{svd.matrixU() * BaseType::Identity() * svd.matrixV().transpose()};
     }
 
     template <typename TT>
     SO3Type<TT> cast() const {
-      return R_.template cast<TT>();
+      return SO3Type(R_.template cast<TT>());
     }
 
     // factory methods
@@ -64,7 +66,7 @@ public:
     static SO3Type from_matrix(const Eigen::MatrixBase<Derived> &other) {
       EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
       Eigen::Matrix<Type, 3, 3> R = other.template cast<Type>();
-      return R;
+      return SO3Type(R);
     }
 
 private:
@@ -76,7 +78,7 @@ class SE3Type {
 public:
     using PointType = Eigen::Matrix<Type, 3, 1>;
 
-    SE3Type() : R_{}, T_{0, 0, 0} {}
+    explicit SE3Type() : R_{}, T_{0, 0, 0} {}
 
     /*
     SE3Type(const Eigen::Matrix<Type, 3, 4> &RT):
@@ -84,11 +86,13 @@ public:
             T_{RT.template block<3, 1>(0, 3)} {}
     */
 
-    SE3Type(const Eigen::Matrix<Type, 4, 4> &RT):
+    template <typename Derived>
+    explicit SE3Type(const Eigen::MatrixBase<Derived> &RT):
             R_{RT.template block<3, 3>(0, 0)},
             T_{RT.template block<3, 1>(0, 3)} {}
 
-    SE3Type(const SO3Type<Type> &R, const Eigen::Matrix<Type, 3, 1> &T) : R_{R}, T_{T} {}
+    template <typename Derived>
+    explicit SE3Type(const SO3Type<Type> &R, const Eigen::MatrixBase<Derived> &T) : R_{R}, T_{T} {}
 
     SE3Type operator*(const SE3Type &other) {
         return {R_ * other.so3(), this->so3() * other.translation() + T_};
@@ -99,7 +103,7 @@ public:
     };
 
     SE3Type inv() const {
-        return {R_.inv(), -(R_.inv() * T_)};
+        return SE3Type{R_.inv(), -(R_.inv() * T_)};
     }
 
     SO3Type<Type> so3() const {
@@ -141,7 +145,7 @@ public:
       EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 4);
       Eigen::Matrix<Type, 3, 3> R = other.template block<3, 3>(0, 0).template cast<Type>();
       Eigen::Matrix<Type, 3, 1> T = other.template block<3, 1>(0, 3).template cast<Type>();
-      return {R, T};
+      return SE3Type{SO3Type<Type>{R}, T};
     }
 
     template <typename Derived1, typename Derived2>
@@ -152,7 +156,7 @@ public:
 
       Eigen::Matrix<Type, 3, 3> R = Rin.template cast<Type>();
       Eigen::Matrix<Type, 3, 1> T = Tin.template cast<Type>();
-      return {R, T};
+      return SE3Type{R, T};
     }
 
 private:
