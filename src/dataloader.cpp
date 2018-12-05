@@ -111,7 +111,7 @@ bool VlslamDatasetLoader::Grab(int i,
     // read image
     std::string png_file = png_files_[i];
     image = cv::imread(png_file);
-    CHECK(!image.empty()) << "empty image: " << png_file;
+    // CHECK(!image.empty()) << "empty image: " << png_file;
 
     // read edge map if have any
     if (i < edge_files_.size()) {

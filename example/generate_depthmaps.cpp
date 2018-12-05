@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "dataloader.h"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 using namespace feh;
 
@@ -13,6 +14,7 @@ const float cx = 469.199;
 const float cy = 257.916;
 const float z_near = 0.05;
 const float z_far = 5.0;
+const float MAX_DEPTH = 5.0;
 
 bool LoadXYZ(const std::string &filename, MatXf &V) {
   try {
@@ -32,7 +34,7 @@ bool LoadXYZ(const std::string &filename, MatXf &V) {
 }
 
 void DepthFromPointcloud(const MatXf &V, const Mat3f &K, const SE3f &g, cv::Mat &depth) {
-  depth.setTo(0);
+  depth.setTo(MAX_DEPTH);
   for (int i = 0; i < V.rows(); ++i) {
     // Vec3f X = K * (g * Vec3f{V.row(i)});
     Vec3f X = K * (g * Vec3f{V.row(i)});
@@ -42,12 +44,13 @@ void DepthFromPointcloud(const MatXf &V, const Mat3f &K, const SE3f &g, cv::Mat 
       // std::cout << StrFormat("[x,y,Z]=%f, %f, %f\n", xc(0), xc(1), X(2));
       if (xc(0) >= 0 && xc(0) < depth.cols 
           && xc(1) >= 0 && xc(1) < depth.rows
-          && (depth.at<float>(xc(1), xc(0)) == 0
-            || depth.at<float>(xc(1), xc(0)) > X(2)) ) {
+          && depth.at<float>(xc(1), xc(0)) > X(2)) {
           depth.at<float>(xc(1), xc(0)) = X(2);
       }
     }
   }
+  // Perform min filtering on image using erode
+  cv::erode(depth, depth, cv::Mat{});
 }
 
 int main(int argc, char **argv) {
@@ -93,7 +96,8 @@ int main(int argc, char **argv) {
     vlslam_pb::BoundingBoxList bboxlist;    // list of bounding boxes
     SE3f gwc;   // camera to world transformation
     SO3f Rg;    // rotation to align with gravity
-    loader->Grab(i, img, edgemap, bboxlist, gwc, Rg);   // grab datum
+    std::string fullpath;
+    loader->Grab(i, img, edgemap, bboxlist, gwc, Rg, fullpath);   // grab datum
 
     // std::cout << "g(world <- camera)=\n" << gwc.matrix3x4() << std::endl;
     // std::cout << "Rg=\n" << Rg.matrix() << std::endl;
@@ -102,11 +106,13 @@ int main(int argc, char **argv) {
     cv::Mat depthmap(imH, imW, CV_32FC1);
     std::cout << "rendering ..." << std::endl;
     DepthFromPointcloud(V, K, gwc.inv() * g_ef_corvis.inv(), depthmap);
-    SaveMat<float>("depth.bin", depthmap);
+    std::string depth_path = fullpath.substr(0, fullpath.size()-4) + ".depth";
+    std::cout << "saving depth to " << depth_path << std::endl;
+    SaveMat<float>(depth_path, depthmap);
 
-    cv::imshow("image", img);
+    if (!img.empty()) cv::imshow("image", img);
     cv::imshow("depth", depthmap);
-    if (cv::waitKey() == 'q') break;
+    if (cv::waitKey(1) == 'q') break;
   }
 
 }
