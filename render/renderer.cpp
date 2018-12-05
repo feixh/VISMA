@@ -166,12 +166,7 @@ void Renderer::InitializeQuadrilateral() {
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-#ifndef FEH_RENDER_USE_SEPARATE_ATTRIB_FORMAT
-// position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
-// texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
-#else
+
     glBindVertexBuffer(0, vbo_quad_, 0, 5 * sizeof(float)); // 1st arg: binding index
     glVertexAttribFormat(0, 2, GL_FLOAT, GL_FALSE, 0);
 
@@ -186,7 +181,6 @@ void Renderer::InitializeQuadrilateral() {
     // matter?
     glVertexAttribBinding(0, 0);
     glVertexAttribBinding(1, 1);
-#endif
 
 
 // Unbind

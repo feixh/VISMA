@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   int imH = cfg.get("image_height", 480).asInt();
   int imW = cfg.get("image_width", 640).asInt();
   float z_near = cfg.get("z_near", 0.05).asFloat();
-  float z_far = cfg.get("z_far", 5.0).asFloat();
+  float z_far = cfg.get("z_far", 10.0).asFloat();
   float fx = cfg.get("fx", 400).asFloat();
   float fy = cfg.get("fy", 400).asFloat();
   float cx = cfg.get("cx", 320).asFloat();
@@ -31,6 +31,10 @@ int main(int argc, char **argv) {
   std::cout << "center=" << V.colwise().mean() << std::endl;
   std::cout << "max=" << V.colwise().maxCoeff() << std::endl;
   std::cout << "min=" << V.colwise().minCoeff() << std::endl;
+  std::cout<< "=== V ===\n";
+  std::cout << V << std::endl;
+  std::cout<< "=== F ===\n";
+  std::cout << F << std::endl;
   ptr->SetMesh(V, F);
   cv::Mat depth_map(imH, imW, CV_32FC1);
   cv::Mat mask(imH, imW, CV_8UC1);
@@ -40,6 +44,7 @@ int main(int argc, char **argv) {
     Vec3f X{model_pose * V.row(i)};
     Vec2f x{(X(0) * fx + cx) / X(2), (X(1) * fy + cy) / X(2)};
     // std::cout << "X=" << X.transpose() << std::endl;
+    std::cout << "z=" << X(2) << ";;; ";
     std::cout << "x=" << x.transpose() << std::endl;
   }
   // ptr->RenderDepth(model_pose.matrix(), depth_map);

@@ -7,3 +7,4 @@ protocols/
 scripts/vlslam_pb2.py
 *.pyc
 *.i
+*.bin
