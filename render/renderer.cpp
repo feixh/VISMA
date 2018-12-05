@@ -275,7 +275,6 @@ void Renderer::SetCamera(float zNear, float zFar, const float *intrinsics) {
 //    projection = glm::scale(projection, glm::vec3(1, -1, 1));
     std::cout << "projection matrix=\n" << glm::to_string(projection) << "\n";
 
-
     if (depth_shader_) {
         depth_shader_->Use();
         glUniformMatrix4fv(glGetUniformLocation(depth_shader_->Program, "view"),
