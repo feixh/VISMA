@@ -6,6 +6,19 @@
 
 using namespace feh;
 
+template <typename Derived>
+std::vector<typename Derived::Scalar> flatten(const Eigen::MatrixBase<Derived> &m) {
+  // Naive implementation of flatten, can use Eigen::Map to simplify code
+  int rows = m.template rows();
+  int cols = m.template cols();
+  std::vector<typename Derived::Scalar> out(rows * cols);
+  for (int i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j){
+      out[i*cols+j] = m(i, j);
+    }
+  return out;
+}
+
 int main(int argc, char **argv) {
   assert(argc > 1 && "usage: render_depth YOUR_CONFIGURATION.json");
   auto cfg = LoadJson(argv[1]);
@@ -31,15 +44,19 @@ int main(int argc, char **argv) {
   std::cout << "center=" << V.colwise().mean() << std::endl;
   std::cout << "max=" << V.colwise().maxCoeff() << std::endl;
   std::cout << "min=" << V.colwise().minCoeff() << std::endl;
+  /*
   std::cout<< "=== V ===\n";
   std::cout << V << std::endl;
   std::cout<< "=== F ===\n";
   std::cout << F << std::endl;
+  */
+
   ptr->SetMesh(V, F);
   cv::Mat depth_map(imH, imW, CV_32FC1);
   cv::Mat mask(imH, imW, CV_8UC1);
   SE3f model_pose(SO3f(), GetVectorFromJson<float, 3>(cfg, "translation"));
   std::cout << model_pose.matrix() << std::endl;
+  /*
   for (int i = 0; i < V.rows(); ++i) {
     Vec3f X{model_pose * V.row(i)};
     Vec2f x{(X(0) * fx + cx) / X(2), (X(1) * fy + cy) / X(2)};
@@ -47,6 +64,7 @@ int main(int argc, char **argv) {
     std::cout << "z=" << X(2) << ";;; ";
     std::cout << "x=" << x.transpose() << std::endl;
   }
+  */
   // ptr->RenderDepth(model_pose.matrix(), depth_map);
   ptr->RenderMask(model_pose.matrix(), mask);
   // cv::imshow("depth map", depth_map);

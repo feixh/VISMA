@@ -2,6 +2,6 @@
   "fx": 400,
   "fy": 400,
   "z_far": 10,
-  "mesh": "misc/cube.ply",
-  "translation": [1, 5, 7]
+  "mesh": "misc/hermanmiller_aeron.obj",
+  "translation": [0, 0, 1]
 }
