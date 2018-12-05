@@ -1,7 +1,13 @@
 {
+  "major_version": 4,
+  "minor_version": 3,
   "fx": 400,
   "fy": 400,
   "z_far": 10,
   "mesh": "misc/hermanmiller_aeron.obj",
-  "translation": [0, 0, 1]
+  "translation": [0, 0, 1],
+  "show": false,
+  "save": true,
+  "output_path": ".",
+  "mask": true
 }

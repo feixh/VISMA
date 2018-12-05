@@ -343,4 +343,33 @@ void MergeJson(Json::Value &a, const Json::Value &b);
 Json::Value LoadJson(const std::string &filename);
 void SaveJson(const Json::Value &j, const std::string &filename);
 
+template <typename Derived>
+std::vector<typename Derived::Scalar> Flatten(const Eigen::MatrixBase<Derived> &m) {
+  // Naive implementation of flatten, can use Eigen::Map to simplify code
+  int rows = m.template rows();
+  int cols = m.template cols();
+  std::vector<typename Derived::Scalar> out(rows * cols);
+  for (int i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j){
+      out[i*cols+j] = m(i, j);
+    }
+  return out;
 }
+
+template <typename T>
+void SaveMat(std::string filename, const cv::Mat &mat) {
+  std::ofstream out(filename, std::ios::out | std::ios::binary);
+  if (!out.is_open()) throw std::ios::failure("failed to open file");
+  int rows = mat.rows;
+  int cols = mat.cols;
+  out.write((char*)&rows, sizeof rows);
+  out.write((char*)&cols, sizeof cols);
+  for (int i = 0; i < rows; ++i)
+    for (int j = 0; j < cols; ++j) {
+      T z = mat.at<T>(i, j);
+      out.write((char*)&z, sizeof z);
+    }
+  out.close();
+}
+
+} // namespace feh
