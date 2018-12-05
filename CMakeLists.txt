@@ -9,6 +9,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib )
 
 # MACROS eigen
 add_definitions(-DEIGEN_INITIALIZE_MATRICES_BY_ZERO)
+add_definitions(-DEIGEN_DEFAULT_TO_ROW_MAJOR)
 
 # Eigen
 find_package(Eigen3 REQUIRED)
@@ -23,6 +24,7 @@ add_subdirectory(thirdparty/abseil-cpp)
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}/core
+        ${PROJECT_SOURCE_DIR}/render
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/thirdparty/libigl/include
         ${PROJECT_SOURCE_DIR}/thirdparty/jsoncpp/include
@@ -65,7 +67,6 @@ add_library(visma SHARED
 
 link_libraries(core visma absl::str_format)
 
-add_subdirectory(render)
 
 
 add_executable(example_load example/example_load.cpp)
@@ -95,3 +96,7 @@ if (${build_evaluation})
     target_link_libraries(example_evaluate visma_eval visma core Open3D)
 endif(${build_evaluation})
 
+set(build_tools True)
+if (${build_tools})
+  add_subdirectory(render)
+endif(${build_tools})

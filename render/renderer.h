@@ -7,7 +7,8 @@
 #include <array>
 #include <unordered_map>
 
-#include "glad/glad.h"
+#include "GL/glew.h"
+#include "GL/glut.h"
 #include "GLFW/glfw3.h"
 #include "glog/logging.h"
 #include "opencv2/core/core.hpp"
@@ -39,7 +40,7 @@ T LinearizeDepth(T zb, T z_near, T z_far) {
 ////////////////////////////////////////////////////////////////////////////////
 class Renderer {
 public:
-    Renderer(int maxHeight, int maxWidth); //, const std::string &name);
+    Renderer(int maxHeight, int maxWidth, int major_version=3, int minor_version=2); //, const std::string &name);
     ~Renderer();
 
     /// \brief: Set camera model.
@@ -157,9 +158,6 @@ private:
 };
 
 typedef std::shared_ptr<Renderer> RendererPtr;
-
-
-
 
 }   // namespace feh
 

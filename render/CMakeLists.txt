@@ -12,13 +12,14 @@ pkg_search_module(GLFW REQUIRED glfw3)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}/thirdparty/glad/include
   ${GLFW_INCLUDE_DIRS}
+  /usr/lib/x86_64-linux-gnu
 )
 
-link_libraries(
-  glfw
-  GL)
+link_libraries(glfw GL GLEW glut)
 
 
 add_library(render SHARED renderer.cpp)
+
+add_executable(render_depth tools/render_depth.cpp)
+target_link_libraries(render_depth render)

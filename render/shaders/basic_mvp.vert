@@ -1,6 +1,6 @@
 // Basic model-view-projection vertex shader.
 // Given the 3D position of a point, apply the projection, view and model transformations sequentially.
-#version 430 core
+#version 330 core
 layout (location = 0) in vec3 position;
 uniform mat4 model;
 uniform mat4 view;

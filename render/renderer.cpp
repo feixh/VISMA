@@ -45,7 +45,7 @@ void main()
 bool Renderer::initialized_ = false;
 int Renderer::counter_ = 0;
 
-Renderer::Renderer(int height, int width) : //, const std::string &name):
+Renderer::Renderer(int height, int width, int major_version, int minor_version) : //, const std::string &name):
         output_with_GL_coordinate_system_(false),
         rows_(height),
         cols_(width),
@@ -63,8 +63,9 @@ Renderer::Renderer(int height, int width) : //, const std::string &name):
         LOG(INFO) << "OpenGL version:" << glfwGetVersionString();
     }
     // Set all the required options for GLFW
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // NOTE: make sure the major and minor version are consistent with the OpenGL version
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major_version);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor_version);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
@@ -75,10 +76,12 @@ Renderer::Renderer(int height, int width) : //, const std::string &name):
     LOG(INFO) << "window created";
 
     // Use glad (a loader generator) to initialize the OpenGL Function pointers
-    if (!gladLoadGL()) {
-        LOG(FATAL) << "FATAL::GLAD::failed to initialize OpnGL function pointers using glad";
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        LOG(FATAL) << "FATAL::failed to initialize OpnGL function pointers";
     } else {
-        LOG(INFO) << "OpenGL function pointers initialized with glad";
+        LOG(INFO) << "OpenGL function pointers initialized";
     }
     PrintGLVersionInfo();
 

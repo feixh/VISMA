@@ -1,6 +1,6 @@
 // Basic depth linearization fragment shader.
 // http://roxlu.com/2014/036/rendering-the-depth-buffer
-#version 430 core
+#version 330 core
 
 in vec2 uv;
 out vec3 color;

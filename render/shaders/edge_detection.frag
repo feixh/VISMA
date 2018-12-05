@@ -1,5 +1,5 @@
 // http://coding-experiments.blogspot.com/2010/06/edge-detection.html
-#version 430 core
+#version 330 core
 
 in vec2 uv;
 //out vec3 color;
@@ -31,7 +31,7 @@ float mean_intensity(in vec4 pix) {
 }
 
 float linearize_depth(in float z) {
-    if (z == 1) return -1;
+    if (z == 1) return float(-1);
     return 2 * z_near * z_far / (z_far + z_near - (2 * z - 1) * (z_far - z_near));
 }
 
@@ -42,7 +42,7 @@ float is_edge(in vec2 pos){
 
     if (pos.x < 5 * dx || pos.x > 1 - 5 * dx
     || pos.y < 5 * dy || pos.y > 1 - 5 * dy) {
-        return 0;
+        return 0.0;
     }
     float value[9]; // pixel values
     float delta;
@@ -57,7 +57,7 @@ float is_edge(in vec2 pos){
     value[7] = linearize_depth(texture(this_texture, pos+vec2(+dx,  0)).r);
     value[8] = linearize_depth(texture(this_texture, pos+vec2(+dx,+dy)).r);
 
-    if (value[4] == -1) return 0;
+    if (value[4] == -1) return 0.0;
 
     // Average color differences around neighboring values.
     delta = 0.25*(abs(value[1]-value[7]) + abs(value[5]-value[3]) + abs(value[0]-value[8]) + abs(value[2]-value[6]));
