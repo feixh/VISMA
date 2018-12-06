@@ -82,12 +82,6 @@ public:
 
     explicit SE3Type() : R_{}, T_{0, 0, 0} {}
 
-    /*
-    SE3Type(const Eigen::Matrix<Type, 3, 4> &RT):
-            R_{RT.template block<3, 3>(0, 0)},
-            T_{RT.template block<3, 1>(0, 3)} {}
-    */
-
     template <typename Derived>
     explicit SE3Type(const Eigen::MatrixBase<Derived> &RT):
             R_{RT.template block<3, 3>(0, 0)},
@@ -95,6 +89,9 @@ public:
 
     template <typename Derived>
     explicit SE3Type(const SO3Type<Type> &R, const Eigen::MatrixBase<Derived> &T) : R_{R}, T_{T} {}
+
+    template <typename Derived>
+    explicit SE3Type(const Eigen::MatrixBase<Derived> &R, const Eigen::MatrixBase<Derived> &T): R_{R}, T_{T} {}
 
     SE3Type operator*(const SE3Type &other) const {
         return SE3Type{
@@ -104,7 +101,7 @@ public:
 
     template <typename Derived>
     PointType operator*(const Eigen::MatrixBase<Derived> &v) const {
-        // FIXME: check dimension of v
+        EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 1);
         return R_ * v + T_;
     };
 
