@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 #include "Eigen/Dense"
 #include "math.h"
 
@@ -83,10 +84,22 @@ dAt_dA(const Eigen::MatrixBase<Derived> &A) {
 // But when using Map<> function to map raw internal data to matrices/vectors,
 // we need to be careful about the order.
 // dC_{n,p}/dA_{n,m}=B_{m,p}
-template <typename T, int N, int M, int P>
-Eigen::Matrix<T, N*P, N*M> dAB_dA(
-        const Eigen::Matrix<T, N, M> &A,
-        const Eigen::Matrix<T, M, P> &B) {
+template <typename Derived, typename OtherDerived>
+Eigen::Matrix<typename Derived::Scalar, 
+  Derived::RowsAtCompileTime*OtherDerived::ColsAtCompileTime,
+  Derived::RowsAtCompileTime*Derived::ColsAtCompileTime> 
+dAB_dA(const Eigen::MatrixBase<Derived> &A,
+    const Eigen::MatrixBase<OtherDerived> &B) {
+
+
+    using T = typename Derived::Scalar;
+    constexpr int N = Derived::RowsAtCompileTime;
+    constexpr int M = Derived::ColsAtCompileTime;
+    constexpr int P = OtherDerived::ColsAtCompileTime;
+
+    static_assert(std::is_same<T, typename OtherDerived::Scalar>::value, "Operands should have same dtype.");
+    static_assert(M == OtherDerived::RowsAtCompileTime, "Columns of A should match rows of B.");
+
     Eigen::Matrix<T, N*P, N*M> D;
     D.setZero();
     for (int n = 0; n < N; ++n) {
@@ -100,10 +113,21 @@ Eigen::Matrix<T, N*P, N*M> dAB_dA(
 }
 
 // dC_{n,p}/dB_{m,p}=A_{n,m}
-template <typename T, int N, int M, int P>
-Eigen::Matrix<T, N*P, M*P> dAB_dB(
-        const Eigen::Matrix<T, N, M> &A,
-        const Eigen::Matrix<T, M, P> &B) {
+template <typename Derived, typename OtherDerived>
+Eigen::Matrix<
+  typename Derived::Scalar, 
+  Derived::RowsAtCompileTime*OtherDerived::ColsAtCompileTime, 
+  OtherDerived::RowsAtCompileTime*OtherDerived::ColsAtCompileTime> 
+dAB_dB(const Eigen::MatrixBase<Derived> &A,
+       const Eigen::MatrixBase<OtherDerived> &B) {
+
+    using T = typename Derived::Scalar;
+    constexpr int N = Derived::RowsAtCompileTime;
+    constexpr int M = Derived::ColsAtCompileTime;
+    constexpr int P = OtherDerived::ColsAtCompileTime;
+    static_assert(std::is_same<T, typename OtherDerived::Scalar>::value, "Operands should have same type.");
+    static_assert(M == OtherDerived::RowsAtCompileTime, "Columns of A should match rows of B.");
+
     Eigen::Matrix<T, N*P, M*P> D;
     D.setZero();
     for (int n = 0; n < N; ++n) {
