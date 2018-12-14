@@ -10,8 +10,6 @@ const ftype eps = 1e-8;
 
 using namespace feh;
 
-namespace {
-
 class MatrixDifferentialTest : public ::testing::Test {
 protected:
     MatrixDifferentialTest() {
@@ -37,7 +35,7 @@ public:
     Eigen::Matrix<ftype, 3, 4> _A;
     Eigen::Matrix<ftype, 4, 5> _B;
 };
-}
+
 
 TEST_F(MatrixDifferentialTest, dAB_dA) {
     // setup the differential operator
