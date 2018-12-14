@@ -67,22 +67,27 @@ add_library(visma SHARED
 
 link_libraries(core visma absl::str_format)
 
-
-
 add_executable(example_load example/example_load.cpp)
-target_link_libraries(example_load visma core)
+# target_link_libraries(example_load visma core)
 
 add_executable(example_dump example/example_dump.cpp)
-target_link_libraries(example_dump visma core)
+# target_link_libraries(example_dump visma core)
 
 add_executable(undistort_images example/undistort_images.cpp)
-target_link_libraries(undistort_images visma core)
+# target_link_libraries(undistort_images visma core)
 
 add_executable(generate_depthmaps example/generate_depthmaps.cpp)
-target_link_libraries(generate_depthmaps visma core)
+# target_link_libraries(generate_depthmaps visma core)
+
+set(BUILD_CORE_TESTS False)
+if (${build_core_tests})
+  add_executable(test_rodrigues core/test/test_rodrigues.cpp)
+  target_link_libraries(test_rodrigues gtest gtest_main)
+  # add_executable(test_se3 core/test_se3.cpp)
+endif(${build_core_tests})
 
 
-set(build_evaluation False)
+set(BUILD_EVALUATION False)
 if (${build_evaluation})
     include_directories(
             ${PROJECT_SOURCE_DIR}/thirdparty/Open3D/include/Open3D)

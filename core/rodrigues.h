@@ -4,15 +4,16 @@
 
 namespace feh {
 
-template <typename T>
-Eigen::Matrix<T, 3, 3> hat(const Eigen::Matrix<T, 3, 1> &u) {
-    return (Eigen::Matrix<T, 3, 3>{} 
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 3> hat(const Eigen::MatrixBase<Derived> &u) {
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 1);
+    return (Eigen::Matrix<typename Derived::Scalar, 3, 3>{} 
             << 0, -u(2), u(1),
                u(2), 0, -u(0),
               -u(1), u(0), 0).finished();
 }
 
-template <typename T>
+template <typename T=float>
 Eigen::Matrix<T, 9, 3> dhat() {
     return (Eigen::Matrix<T, 9, 3>{} 
             << 0,  0,  0,
@@ -26,17 +27,19 @@ Eigen::Matrix<T, 9, 3> dhat() {
                0,  0,  0).finished();
 }
 
-template <typename T>
-Eigen::Matrix<T, 9, 3> dhat(const Eigen::Matrix<T, 3, 1> &u) {
-    return dhat<T>();
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 9, 3> dhat(const Eigen::MatrixBase<Derived> &u) {
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 1);
+    return dhat<typename Derived::Scalar>();
 }
 
-template <typename T>
-Eigen::Matrix<T, 3, 1> vee(const Eigen::Matrix<T, 3, 3> &R) {
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 1> vee(const Eigen::MatrixBase<Derived> &R) {
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
     return {R(2,1) - R(1, 2), R(0, 2) - R(2, 0), R(1, 0) - R(0, 1)};
 }
 
-template <typename T>
+template <typename T=float>
 Eigen::Matrix<T, 3, 9> dvee() {
     return (Eigen::Matrix<T, 3, 9>{} 
             << 0, 0, 0, 0, 0, -1, 0, 1, 0,
@@ -44,12 +47,13 @@ Eigen::Matrix<T, 3, 9> dvee() {
                0, -1, 0, 1, 0, 0, 0, 0, 0).finished();
 }
 
-template <typename T>
-Eigen::Matrix<T, 3, 9> dvee(const Eigen::Matrix<T, 3, 3> &R) {
-    return dvee<T>();
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 9> dvee(const Eigen::MatrixBase<Derived> &R) {
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
+    return dvee<typename Derived::Scalar>();
 }
 
-template <typename T, int N, int M>
+template <typename T=float, int N=3, int M=3>
 Eigen::Matrix<T, M*N, N*M> dAt_dA() {
     Eigen::Matrix<T, M*N, N*M> D;
     D.setZero();
@@ -61,9 +65,15 @@ Eigen::Matrix<T, M*N, N*M> dAt_dA() {
     return D;
 }
 
-template <typename T, int N, int M>
-Eigen::Matrix<T, M*N, N*M> dAt_dA(const Eigen::Matrix<T, N, M> &A) {
-    return dAt_dA<T, N, M>();
+
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 
+  Derived::RowsAtCompileTime * Derived::ColsAtCompileTime,
+  Derived::RowsAtCompileTime * Derived::ColsAtCompileTime> 
+dAt_dA(const Eigen::MatrixBase<Derived> &A) {
+  return dAt_dA<typename Derived::Scalar, 
+                Derived::RowsAtCompileTime, 
+                Derived::ColsAtCompileTime>();
 }
 
 
@@ -106,9 +116,13 @@ Eigen::Matrix<T, N*P, M*P> dAB_dB(
     return D;
 }
 
-template <typename T>
-Eigen::Matrix<T, 3, 3> rodrigues(const Eigen::Matrix<T, 3, 1> &w, 
-        Eigen::Matrix<T, 9, 3> *dR_dw=nullptr) {
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 3> 
+rodrigues(const Eigen::MatrixBase<Derived> &w, 
+    Eigen::Matrix<typename Derived::Scalar, 9, 3> *dR_dw=nullptr) {
+
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 1);
+    using T = typename Derived::Scalar;
     Eigen::Matrix<T, 3, 3> R;
 
     T th = w.norm();
@@ -143,9 +157,13 @@ Eigen::Matrix<T, 3, 3> rodrigues(const Eigen::Matrix<T, 3, 1> &w,
     return R;
 }
 
-template <typename T>
-Eigen::Matrix<T, 3, 1> invrodrigues(const Eigen::Matrix<T, 3, 3> &R,
-        Eigen::Matrix<T, 3, 9> *dw_dR=nullptr) {
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 1> 
+invrodrigues(const Eigen::MatrixBase<Derived> &R,
+        Eigen::Matrix<typename Derived::Scalar, 3, 9> *dw_dR=nullptr) {
+
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
+    using T = typename Derived::Scalar;
 
     Eigen::Matrix<T, 3, 1> w;
 
@@ -184,8 +202,12 @@ Eigen::Matrix<T, 3, 1> invrodrigues(const Eigen::Matrix<T, 3, 3> &R,
 }
 
 
-template <typename T>
-Eigen::Matrix<T, 3, 3> projectSO3(const Eigen::Matrix<T, 3, 3> &R) {
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar, 3, 3> 
+projectSO3(const Eigen::MatrixBase<Derived> &R) {
+
+    EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE(Derived, 3, 3);
+    using T = typename Derived::Scalar;
     Eigen::JacobiSVD<Eigen::Matrix<T, 3, 3>> svd(R, Eigen::ComputeFullU | Eigen::ComputeFullV);
     return svd.matrixU() * Eigen::Matrix<T, 3, 3>::Identity() * svd.matrixV().transpose();
 }

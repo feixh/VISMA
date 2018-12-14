@@ -8,7 +8,10 @@
 using ftype = double;
 const ftype eps = 1e-8;
 
+using namespace feh;
+
 namespace {
+
 class MatrixDifferentialTest : public ::testing::Test {
 protected:
     MatrixDifferentialTest() {
