@@ -8,22 +8,25 @@ In the follow-up ECCV 2018 paper, the system has been further improved to model 
 
 If you find VISMA or this repo useful and use them in your work, please cite the following papers:
 
-- Visual-Inertial Object Detection and Mapping.
+```
+@inproceedings{feiS18,
+    title = {Visual-Inertial Object Detection and Mapping},
+    author = {Fei, X. and Soatto, S.},
+    booktitle = {Proceedings of the European Conference on Computer Vision},
+    year = {2018}
+}
+```
+\[[paper][eccv18_paper]\]-\[[poster][eccv18_poster]\]-\[[video][eccv18_video]\]
 
-    Xiaohan Fei, Stefano Soatto.
-
-    In *Proceedings of European Conference on Computer Vision*, 2018.
-
-    \[[paper][eccv18_paper]\]-\[[poster][eccv18_poster]\]-\[[video][eccv18_video]\]
-
-
-- Visual-Inertial-Semantic Scene Representation for 3D Object Detection.
-
-    Jingming Dong\*, Xiaohan Fei\*, Stefano Soatto.
-
-    In *Proceedings of Computer Vision and Pattern Recognition*, 2017.
-
-    \[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
+```
+@inproceedings{dongFS17,
+    author = {Dong, J., Fei, X., and Soatto, S.},
+    title = {Visual Inertial Semantic Scene Representation for 3D Object Detection},
+    booktitle = {Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+    year = {2017}
+}
+```
+\[[paper][cvpr17_paper]\]-\[[poster][cvpr17_poster]\]-\[[video][cvpr17_video]\]
 
 <!-- ECCV18 -->
 
